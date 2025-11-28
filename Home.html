@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grid Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- TOP TWO-COLUMN LAYOUT -->
+  <div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="controls-card">
+
+      <!-- TAB BUTTONS -->
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="tab-controls">Controls</button>
+        <button class="tab-btn" data-tab="tab-input">Input / Export</button>
+        <button class="tab-btn" data-tab="tab-history">History</button>
+      </div>
+
+      <!-- TAB CONTENTS -->
+      <div class="tab-contents">
+
+        <!-- CONTROLS TAB -->
+        <div class="tab-content active" id="tab-controls">
+          <h3>Grid Controls</h3>
+          <div class="form-group">
+            <label>Rows: <input id="rows" type="number" value="10" min="1"></label>
+            <label>Cols: <input id="cols" type="number" value="10" min="1"></label>
+          </div>
+          <div class="form-group">
+            <label>Cell Size: <input id="cellSize" type="range" min="10" max="100" value="40"></label>
+            <label>Color: <input id="colorPicker" type="color" value="#1f1f1f"></label>
+          </div>
+          <div class="form-group">
+            <button id="toggleIndices">Toggle Indices</button>
+            <button id="indexMode">0-Based Index</button>
+          </div>
+          <div class="form-group rotate-row">
+            <button id="rotateCW" class="half-btn">Rotate ⟳</button>
+            <button id="rotateCCW" class="half-btn">Rotate ⟲</button>
+          </div>
+          <div class="form-group">
+            <label>Fill With Value:</label>
+            <input id="fillValueInput" type="text" placeholder="value">
+            <button id="fillValueBtn">Fill Grid</button>
+          </div>
+          <div class="form-group">
+            <button id="fillRandom">Random Fill (0-9)</button>
+            <button id="fillBinary">Random Binary Grid</button>
+            <button id="randomGrid">Generate Random Grid</button>
+          </div>
+          <button id="clearAll" class="full-btn">Clear All</button>
+        </div>
+
+        <!-- INPUT / EXPORT TAB -->
+        <div class="tab-content" id="tab-input">
+          <h3>Import / Export</h3>
+          <textarea id="cfInput" rows="6" placeholder="Paste input here..."></textarea>
+          <div class="form-group">
+            <button id="importCF">Import CF Input</button>
+            <button id="exportCF">Copy as CF Input</button>
+          </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div class="tab-content" id="tab-history">
+          <h3>History & Templates</h3>
+          <div class="form-group rotate-row">
+            <button id="undoBtn" class="half-btn">Undo</button>
+            <button id="redoBtn" class="half-btn">Redo</button>
+          </div>
+          <div class="form-group">
+            <button id="saveTemplate">Save Template</button>
+            <button id="loadTemplate">Load Template</button>
+            <button id="toggleInputs">Disable Inputs</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- GRID AREA -->
+    <div class="grid-wrapper">
+      <div id="grid"></div>
+    </div>
+
+  </div>
+
+
+  <!-- FORMULAS SECTION -->
+  <div class="formulas-card">
+
+    <div class="formulas-tabs">
+      <button class="formulas-tab-btn active" data-tab="f-rotate">Rotate / Flip</button>
+      <button class="formulas-tab-btn" data-tab="f-prefix">2D Prefix Sum</button>
+      <button class="formulas-tab-btn" data-tab="f-mult">Multiply / Exponent</button>
+      <button class="formulas-tab-btn" data-tab="f-transpose">Transpose</button>
+      <button class="formulas-tab-btn" data-tab="f-det">Determinant</button>
+      <button class="formulas-tab-btn" data-tab="f-others">Other</button>
+    </div>
+
+    <div class="formulas-contents">
+
+      <!-- ROTATE / FLIP -->
+      <div class="formula-section active" id="f-rotate">
+        <h4>Rotate 90° Clockwise (In-Place)</h4>
+        <pre><code>// rotate NxN matrix in-place (clockwise)
+void rotateClockwise(vector<vector<int>>& a) {
+    int n = a.size();
+    for (int i = 0; i < n/2; ++i) {
+        for (int j = i; j < n - i - 1; ++j) {
+            int tmp = a[i][j];
+            a[i][j] = a[n-1-j][i];
+            a[n-1-j][i] = a[n-1-i][n-1-j];
+            a[n-1-i][n-1-j] = a[j][n-1-i];
+            a[j][n-1-i] = tmp;
+        }
+    }
+}</code></pre>
+
+        <h4>Flip Horizontal / Vertical</h4>
+        <pre><code>// flip horizontally (mirror left-right)
+void flipHorizontal(vector<vector<int>>& a) {
+    int n = a.size(), m = a[0].size();
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m/2; ++j)
+            swap(a[i][j], a[i][m-1-j]);
+}
+
+// flip vertically (mirror top-bottom)
+void flipVertical(vector<vector<int>>& a) {
+    int n = a.size();
+    for (int i = 0; i < n/2; ++i)
+        swap(a[i], a[n-1-i]);
+}</code></pre>
+      </div>
+
+      <!-- 2D PREFIX SUM -->
+      <div class="formula-section" id="f-prefix">
+        <h4>2D Prefix Sum (build and query)</h4>
+        <pre><code>// build prefix sum p where p[i+1][j+1] = sum of a[0..i][0..j]
+vector<vector<long long>> buildPrefix(const vector<vector<int>>& a) {
+    int n = a.size(), m = a[0].size();
+    vector<vector<long long>> p(n+1, vector<long long>(m+1, 0));
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m; ++j)
+            p[i+1][j+1] = a[i][j] + p[i][j+1] + p[i+1][j] - p[i][j];
+    return p;
+}
+
+// query sum of submatrix (r1..r2, c1..c2) inclusive (0-based)
+long long querySum(const vector<vector<long long>>& p, int r1, int c1, int r2, int c2) {
+    return p[r2+1][c2+1] - p[r1][c2+1] - p[r2+1][c1] + p[r1][c1];
+}</code></pre>
+      </div>
+
+      <!-- MULTIPLICATION & EXPONENTIATION -->
+      <div class="formula-section" id="f-mult">
+        <h4>Naive Matrix Multiplication</h4>
+        <pre><code>vector<vector<long long>> multiply(const vector<vector<int>>& A,
+                                   const vector<vector<int>>& B) {
+    int n = A.size(), k = A[0].size(), m = B[0].size();
+    vector<vector<long long>> C(n, vector<long long>(m, 0));
+    for (int i = 0; i < n; ++i)
+        for (int t = 0; t < k; ++t)
+            for (int j = 0; j < m; ++j)
+                C[i][j] += 1LL * A[i][t] * B[t][j];
+    return C;
+}</code></pre>
+
+        <h4>Matrix Exponentiation (square)</h4>
+        <pre><code>using Mat = vector<vector<long long>>;
+
+Mat matMul(const Mat& A, const Mat& B, long long mod = -1) {
+    int n = A.size();
+    Mat C(n, vector<long long>(n, 0));
+    for (int i = 0; i < n; ++i)
+        for (int k = 0; k < n; ++k)
+            for (int j = 0; j < n; ++j) {
+                C[i][j] += A[i][k] * B[k][j];
+                if (mod > 0) C[i][j] %= mod;
+            }
+    return C;
+}
+
+Mat matPow(Mat base, long long exp, long long mod = -1) {
+    int n = base.size();
+    Mat res(n, vector<long long>(n, 0));
+    for (int i = 0; i < n; ++i) res[i][i] = 1;
+    while (exp) {
+        if (exp & 1) res = matMul(res, base, mod);
+        base = matMul(base, base, mod);
+        exp >>= 1;
+    }
+    return res;
+}</code></pre>
+      </div>
+
+      <!-- TRANSPOSE -->
+      <div class="formula-section" id="f-transpose">
+        <h4>Transpose</h4>
+        <pre><code>// in-place transpose (square)
+void transposeSquare(vector<vector<int>>& a) {
+    int n = a.size();
+    for (int i = 0; i < n; ++i)
+        for (int j = i+1; j < n; ++j)
+            swap(a[i][j], a[j][i]);
+}
+
+// transpose rectangular -> new matrix
+vector<vector<int>> transpose(const vector<vector<int>>& a) {
+    int n = a.size(), m = a[0].size();
+    vector<vector<int>> b(m, vector<int>(n));
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m; ++j)
+            b[j][i] = a[i][j];
+    return b;
+}</code></pre>
+      </div>
+
+      <!-- DETERMINANT -->
+      <div class="formula-section" id="f-det">
+        <h4>Determinant via Gaussian elimination</h4>
+        <pre><code>double determinant(vector<vector<double>> a) {
+    int n = a.size();
+    double det = 1;
+    const double EPS = 1e-12;
+    for (int i = 0; i < n; ++i) {
+        int pivot = i;
+        for (int j = i; j < n; ++j)
+            if (fabs(a[j][i]) > fabs(a[pivot][i])) pivot = j;
+        if (fabs(a[pivot][i]) < EPS) return 0.0;
+        if (i != pivot) { swap(a[i], a[pivot]); det = -det; }
+        det *= a[i][i];
+        double inv = 1.0 / a[i][i];
+        for (int j = i+1; j < n; ++j) {
+            double f = a[j][i] * inv;
+            for (int k = i+1; k < n; ++k) a[j][k] -= f * a[i][k];
+        }
+    }
+    return det;
+}</code></pre>
+      </div>
+
+      <!-- OTHER -->
+      <div class="formula-section" id="f-others">
+        <h4>Helpers</h4>
+        <pre><code>// fill with value
+void fillMatrix(vector<vector<int>>& a, int val) {
+    for (auto &r : a) fill(r.begin(), r.end(), val);
+}
+
+// rotate non-square: returns new matrix
+vector<vector<int>> rotate90New(const vector<vector<int>>& a) {
+    int n = a.size(), m = a[0].size();
+    vector<vector<int>> b(m, vector<int>(n));
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m; ++j)
+            b[j][n-1-i] = a[i][j]; // clockwise
+    return b;
+}</code></pre>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="main.js"></script>
+
+</body>
+</html>

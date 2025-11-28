@@ -1,0 +1,225 @@
+:root {
+  --cell-size: 40px;
+  --line-color: #000;
+  --bg-color: #fff;
+  --sidebar-width: 280px;
+}
+
+/* ====== RESET & BASE ====== */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  background: var(--bg-color);
+  color: #111;
+  padding: 12px;
+}
+
+/* ====== CONTAINER ====== */
+.container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  gap: 16px;
+  max-width: 1600px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ====== SIDEBAR CARD ====== */
+.controls-card {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+}
+
+/* ====== SIDEBAR TABS ====== */
+.tab-buttons {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fafafa;
+  padding: 4px;
+  border-radius: 10px 10px 0 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  color: #444;
+  border-radius: 8px 8px 0 0;
+  transition: 0.2s;
+}
+.tab-btn:hover { background: #f0f0f0; }
+.tab-btn.active {
+  background: #fff;
+  color: #111;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  box-shadow: 0 -1px 6px rgba(0,0,0,0.04);
+  position: relative;
+  z-index: 2;
+}
+
+/* ====== TAB CONTENT ====== */
+.tab-contents { display: flex; flex-direction: column; }
+.tab-content {
+  display: none;
+  padding: 12px;
+  background: #fff;
+  border-radius: 0 0 10px 10px;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+}
+.tab-content.active { display: block; }
+
+/* ====== FORM GROUPS & BUTTONS ====== */
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.rotate-row { display: flex; gap: 8px; width: 100%; }
+.half-btn { flex: 1; }
+.full-btn { width: 100%; }
+
+input[type="text"], input[type="number"], textarea {
+  font-family: inherit;
+  font-size: 14px;
+}
+input[type="range"] { width: 100%; }
+input { width: 72px; padding: 6px; border-radius: 6px; border: 1px solid #cfcfcf; }
+button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+button:hover { opacity: 0.88; }
+#cfInput { width: 100%; min-height: 96px; padding: 8px; border-radius: 6px; border: 1px solid #ddd; resize: vertical; }
+
+/* ====== GRID ====== */
+.grid-wrapper { width: 100%; overflow: auto; height: 100%; }
+#grid {
+  display: grid;
+  gap: 0;
+  justify-self: center;
+  align-self: start;
+}
+
+/* ====== CELLS ====== */
+.cell {
+  position: relative;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border: 1px solid var(--line-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  user-select: none;
+  cursor: pointer;
+  background-color: var(--bg-color);
+  transition: 0.12s;
+}
+.cell.filled { background-color: #1f1f1f; color: #fff; }
+.cell input { width: 80%; height: 80%; text-align: center; border: none; background: transparent; font-size: 14px; outline: none; }
+
+/* ====== FORMULAS SECTION ====== */
+.formulas-card {
+  width: 100%;
+  margin-top: 20px;
+  background: #1b1b1b;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Formulas Tabs */
+.formulas-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.formulas-tab-btn {
+  padding: 8px 16px;
+  background: #2c2c2c;
+  color: #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+.formulas-tab-btn:hover {
+  background: #3a3a3a;
+  color: #fff;
+}
+.formulas-tab-btn.active {
+  background: #1f1f1f;
+  color: #fff;
+  border-color: #444;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Formulas Content */
+.formulas-contents .formula-section {
+  display: none;
+  background: #2a2a2a;
+  padding: 16px;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  overflow-x: auto;
+  line-height: 1.5;
+  border: 1px solid #333;
+}
+.formulas-contents .formula-section.active {
+  display: block;
+}
+
+/* Headings inside formulas section */
+.formula-section h4 {
+  color: #fff;
+  margin-bottom: 8px;
+  font-size: 16px;
+  border-left: 3px solid #ff8c42;
+  padding-left: 8px;
+}
+
+/* Code block styling */
+.formula-section pre {
+  background: #1f1f1f;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  color: #f5f5f5;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid #444;
+}
+.formula-section code {
+  font-family: 'Fira Code', monospace;
+  color: #f5f5f5;
+}
+
+/* highlight keywords lightly */
+.formula-section code span.keyword {
+  color: #ff9f43;
+  font-weight: 600;
+}
+
+/* Responsive tweaks */
+@media (max-width: 760px) {
+  .formulas-tabs { justify-content: center; }
+  .formula-section { font-size: 13px; }
+}

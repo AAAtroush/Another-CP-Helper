@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grid Visualizer</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
 </head>
+
 <body>
 
   <!-- TOP TWO-COLUMN LAYOUT -->
-  <div class="container">
+  <section class="container">
 
     <!-- SIDEBAR -->
     <div class="controls-card">
@@ -89,11 +94,11 @@
       <div id="grid"></div>
     </div>
 
-  </div>
+  </section>
 
 
   <!-- FORMULAS SECTION -->
-  <div class="formulas-card">
+  <section class="formulas-card">
 
     <div class="formulas-tabs">
       <button class="formulas-tab-btn active" data-tab="f-rotate">Rotate / Flip</button>
@@ -109,8 +114,8 @@
       <!-- ROTATE / FLIP -->
       <div class="formula-section active" id="f-rotate">
         <h4>Rotate 90° Clockwise (In-Place)</h4>
-        <pre><code>// rotate NxN matrix in-place (clockwise)
-void rotateClockwise(vector<vector<int>>& a) {
+        <pre><code class="language-c++">// rotate NxN matrix in-place (clockwise)
+void rotateClockwise(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size();
     for (int i = 0; i < n/2; ++i) {
         for (int j = i; j < n - i - 1; ++j) {
@@ -124,8 +129,8 @@ void rotateClockwise(vector<vector<int>>& a) {
 }</code></pre>
 
         <h4>Flip Horizontal / Vertical</h4>
-        <pre><code>// flip horizontally (mirror left-right)
-void flipHorizontal(vector<vector<int>>& a) {
+        <pre><code class="language-c++">// flip horizontally (mirror left-right)
+void flipHorizontal(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m/2; ++j)
@@ -133,7 +138,7 @@ void flipHorizontal(vector<vector<int>>& a) {
 }
 
 // flip vertically (mirror top-bottom)
-void flipVertical(vector<vector<int>>& a) {
+void flipVertical(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size();
     for (int i = 0; i < n/2; ++i)
         swap(a[i], a[n-1-i]);
@@ -143,10 +148,10 @@ void flipVertical(vector<vector<int>>& a) {
       <!-- 2D PREFIX SUM -->
       <div class="formula-section" id="f-prefix">
         <h4>2D Prefix Sum (build and query)</h4>
-        <pre><code>// build prefix sum p where p[i+1][j+1] = sum of a[0..i][0..j]
-vector<vector<long long>> buildPrefix(const vector<vector<int>>& a) {
+        <pre><code class="language-c++">// build prefix sum p where p[i+1][j+1] = sum of a[0..i][0..j]
+vector&lt;vector&lt;long long&gt;&gt; buildPrefix(const vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
-    vector<vector<long long>> p(n+1, vector<long long>(m+1, 0));
+    vector&lt;vector&lt;long long&gt;&gt; p(n+1, vector<long long>(m+1, 0));
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m; ++j)
             p[i+1][j+1] = a[i][j] + p[i][j+1] + p[i+1][j] - p[i][j];
@@ -154,7 +159,7 @@ vector<vector<long long>> buildPrefix(const vector<vector<int>>& a) {
 }
 
 // query sum of submatrix (r1..r2, c1..c2) inclusive (0-based)
-long long querySum(const vector<vector<long long>>& p, int r1, int c1, int r2, int c2) {
+long long querySum(const vector&lt;vector&lt;long long&gt;&gt;& p, int r1, int c1, int r2, int c2) {
     return p[r2+1][c2+1] - p[r1][c2+1] - p[r2+1][c1] + p[r1][c1];
 }</code></pre>
       </div>
@@ -162,10 +167,10 @@ long long querySum(const vector<vector<long long>>& p, int r1, int c1, int r2, i
       <!-- MULTIPLICATION & EXPONENTIATION -->
       <div class="formula-section" id="f-mult">
         <h4>Naive Matrix Multiplication</h4>
-        <pre><code>vector<vector<long long>> multiply(const vector<vector<int>>& A,
-                                   const vector<vector<int>>& B) {
+        <pre><code class="language-c++">vector&lt;vector&lt;long long&gt;&gt; multiply(const vector&lt;vector&lt;int&gt;&gt;& A,
+                                   const vector&lt;vector&lt;int&gt;&gt;& B) {
     int n = A.size(), k = A[0].size(), m = B[0].size();
-    vector<vector<long long>> C(n, vector<long long>(m, 0));
+    vector&lt;vector&lt;long long&gt;&gt; C(n, vector<long long>(m, 0));
     for (int i = 0; i < n; ++i)
         for (int t = 0; t < k; ++t)
             for (int j = 0; j < m; ++j)
@@ -174,7 +179,7 @@ long long querySum(const vector<vector<long long>>& p, int r1, int c1, int r2, i
 }</code></pre>
 
         <h4>Matrix Exponentiation (square)</h4>
-        <pre><code>using Mat = vector<vector<long long>>;
+        <pre><code class="language-c++">using Mat = vector&lt;vector&lt;long long&gt;&gt;;
 
 Mat matMul(const Mat& A, const Mat& B, long long mod = -1) {
     int n = A.size();
@@ -195,7 +200,7 @@ Mat matPow(Mat base, long long exp, long long mod = -1) {
     while (exp) {
         if (exp & 1) res = matMul(res, base, mod);
         base = matMul(base, base, mod);
-        exp >>= 1;
+        exp &gt;&gt;= 1;
     }
     return res;
 }</code></pre>
@@ -204,8 +209,8 @@ Mat matPow(Mat base, long long exp, long long mod = -1) {
       <!-- TRANSPOSE -->
       <div class="formula-section" id="f-transpose">
         <h4>Transpose</h4>
-        <pre><code>// in-place transpose (square)
-void transposeSquare(vector<vector<int>>& a) {
+        <pre><code class="language-c++">// in-place transpose (square)
+void transposeSquare(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size();
     for (int i = 0; i < n; ++i)
         for (int j = i+1; j < n; ++j)
@@ -213,9 +218,9 @@ void transposeSquare(vector<vector<int>>& a) {
 }
 
 // transpose rectangular -> new matrix
-vector<vector<int>> transpose(const vector<vector<int>>& a) {
+vector&lt;vector&lt;int&gt;&gt; transpose(const vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
-    vector<vector<int>> b(m, vector<int>(n));
+    vector&lt;vector&lt;int&gt;&gt; b(m, vector<int>(n));
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m; ++j)
             b[j][i] = a[i][j];
@@ -226,7 +231,7 @@ vector<vector<int>> transpose(const vector<vector<int>>& a) {
       <!-- DETERMINANT -->
       <div class="formula-section" id="f-det">
         <h4>Determinant via Gaussian elimination</h4>
-        <pre><code>double determinant(vector<vector<double>> a) {
+        <pre><code class="language-c++">double determinant(vector&lt;vector&lt;double&gt;&gt; a) {
     int n = a.size();
     double det = 1;
     const double EPS = 1e-12;
@@ -250,15 +255,15 @@ vector<vector<int>> transpose(const vector<vector<int>>& a) {
       <!-- OTHER -->
       <div class="formula-section" id="f-others">
         <h4>Helpers</h4>
-        <pre><code>// fill with value
-void fillMatrix(vector<vector<int>>& a, int val) {
+        <pre><code class="language-c++">// fill with value
+void fillMatrix(vector&lt;vector&lt;int&gt;&gt;& a, int val) {
     for (auto &r : a) fill(r.begin(), r.end(), val);
 }
 
 // rotate non-square: returns new matrix
-vector<vector<int>> rotate90New(const vector<vector<int>>& a) {
+vector&lt;vector&lt;int&gt;&gt; rotate90New(const vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
-    vector<vector<int>> b(m, vector<int>(n));
+    vector&lt;vector&lt;int&gt;&gt; b(m, vector<int>(n));
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m; ++j)
             b[j][n-1-i] = a[i][j]; // clockwise
@@ -268,9 +273,10 @@ vector<vector<int>> rotate90New(const vector<vector<int>>& a) {
 
     </div>
 
-  </div>
+  </section>
 
   <script src="main.js"></script>
 
 </body>
+
 </html>

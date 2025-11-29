@@ -4,7 +4,7 @@ const colsInput = document.getElementById("cols");
 const cellSizeInput = document.getElementById("cellSize");
 const colorPicker = document.getElementById("colorPicker");
 
-cellSizeInput.max = Math.floor(cellSizeInput.max * 0.6);
+cellSizeInput.max = Math.floor(cellSizeInput.max * 0.8);
 
 const importBtn = document.getElementById("importCF");
 const exportBtn = document.getElementById("exportCF");
@@ -225,6 +225,10 @@ function buildGrid(save = true) {
       const input = document.createElement("input");
       input.type = "text";
       input.value = match ? match.value : "";
+      input.disabled = inputsDisabled;
+      if (inputsDisabled) {
+        input.style.pointerEvents = "none";
+      }
       input.addEventListener("input", () => {
         if (!isInitializing) saveHistory();
       });
@@ -421,7 +425,15 @@ function toggleInputs() {
   inputsDisabled = !inputsDisabled;
   document
     .querySelectorAll(".cell input")
-    .forEach((inp) => (inp.disabled = inputsDisabled));
+    .forEach((inp) => {
+      inp.disabled = inputsDisabled;
+      // Make input non-interactive for pointer events so clicks pass through to cell for painting
+      if (inputsDisabled) {
+        inp.style.pointerEvents = "none";
+      } else {
+        inp.style.pointerEvents = "auto";
+      }
+    });
   toggleInputsBtn.textContent = inputsDisabled
     ? "Enable Inputs"
     : "Disable Inputs";

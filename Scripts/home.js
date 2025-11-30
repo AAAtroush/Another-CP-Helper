@@ -40,6 +40,7 @@ let completedCards = [];
 let solvedProblemsCount = 0;
 let totalProblemsCount = 0;
 let solvingProblemsCount = 0;
+let isLoadingCards = false;
 
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -222,6 +223,7 @@ function checkAuthState() {
       updateUIForLoggedOut();
       cards = [];
       completedCards = [];
+      isLoadingCards = false;
       renderCards();
     }
   });

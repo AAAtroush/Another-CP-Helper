@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>البطاقة - CP Helper</title>
+  <link rel="stylesheet" href="home.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    .card-page-header {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+    }
+    .card-page-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-page-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .card-page-meta span {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .card-page-content {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      line-height: 1.8;
+      color: var(--text-primary);
+      min-height: 200px;
+    }
+    .card-page-content h1, .card-page-content h2, .card-page-content h3 {
+      color: var(--text-primary);
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    .card-page-content p {
+      margin-bottom: 16px;
+    }
+    .card-page-content code {
+      background: rgba(99, 102, 241, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .card-page-content pre {
+      background: var(--bg-dark);
+      color: var(--text-white);
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .edit-content-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--text-white);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    .edit-content-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: var(--danger);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="header-content">
+      <h1><a href="home.html" style="text-decoration: none; color: inherit;">← العودة للصفحة الرئيسية</a></h1>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <section class="container">
+    <div id="cardPageContent">
+      <div class="loading">
+        <h2>جاري التحميل...</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- Edit Button (Admin Only) -->
+  <button id="editContentBtn" class="edit-content-btn" style="display: none;">✎ تعديل المحتوى</button>
+
+  <script>
+    // Firebase Configuration (same as home.js)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDX9anrwJs6luB8HpLc1qoTvjVz1ZV1CiI",
+      authDomain: "another-cp-helper.firebaseapp.com",
+      projectId: "another-cp-helper",
+      storageBucket: "another-cp-helper.firebasestorage.app",
+      messagingSenderId: "96214849866",
+      appId: "1:96214849866:web:22610c5062d648243b49b3"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const ADMIN_EMAILS = ['amhemdeod@gmail.com', 'momen.atroush605@gmail.com'];
+
+    let currentUser = null;
+    let isAdmin = false;
+    let currentCard = null;
+
+    // Get card ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get('id');
+
+    // Check auth state
+    auth.onAuthStateChanged((user) => {
+      currentUser = user;
+      if (user) {
+        isAdmin = ADMIN_EMAILS.includes(user.email);
+        if (isAdmin) {
+          document.getElementById('editContentBtn').style.display = 'block';
+        }
+      }
+      if (cardId) {
+        loadCard(cardId);
+      }
+    });
+
+    // Load card data
+    async function loadCard(id) {
+      const contentDiv = document.getElementById('cardPageContent');
+      
+      try {
+        const cardDoc = await db.collection('cards').doc(id).get();
+        
+        if (!cardDoc.exists) {
+          contentDiv.innerHTML = `
+            <div class="error">
+              <h2>بطاقة غير موجودة</h2>
+              <p>لم يتم العثور على البطاقة المطلوبة</p>
+              <a href="home.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
+            </div>
+          `;
+          return;
+        }
+
+        currentCard = {
+          id: cardDoc.id,
+          ...cardDoc.data()
+        };
+
+        displayCard(currentCard);
+      } catch (error) {
+        console.error('Error loading card:', error);
+        contentDiv.innerHTML = `
+          <div class="error">
+            <h2>حدث خطأ</h2>
+            <p>${error.message}</p>
+            <a href="home.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
+          </div>
+        `;
+      }
+    }
+
+    // Display card content
+    function displayCard(card) {
+      const contentDiv = document.getElementById('cardPageContent');
+      const difficultyClass = card.difficulty === 'سهل' ? 'easy' : 
+                            card.difficulty === 'متوسط' ? 'medium' : 'hard';
+      
+      const cardContent = card.content || '<p>لا يوجد محتوى لهذه البطاقة بعد.</p>';
+      
+      contentDiv.innerHTML = `
+        <div class="card-page-header">
+          <h1 class="card-page-title">${card.title || 'بدون عنوان'}</h1>
+          <div class="card-page-meta">
+            <span class="card-category">${card.category || 'عام'}</span>
+            <span class="card-difficulty ${difficultyClass}">${card.difficulty || 'متوسط'}</span>
+          </div>
+          <p style="color: var(--text-secondary); margin: 0;">${card.description || 'لا يوجد وصف'}</p>
+        </div>
+        <div class="card-page-content">
+          ${cardContent}
+        </div>
+      `;
+    }
+
+    // Edit button click
+    document.getElementById('editContentBtn').addEventListener('click', () => {
+      if (currentCard) {
+        window.location.href = `home.html?edit=${currentCard.id}`;
+      }
+    });
+
+    // If no card ID, show error
+    if (!cardId) {
+      document.getElementById('cardPageContent').innerHTML = `
+        <div class="error">
+          <h2>معرف البطاقة غير موجود</h2>
+          <p>الرجاء تحديد بطاقة للعرض</p>
+          <a href="home.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
+        </div>
+      `;
+    }
+  </script>
+
+</body>
+
+</html>

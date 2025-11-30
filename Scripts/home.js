@@ -73,7 +73,6 @@ const ADMIN_EMAILS = _ae;
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   checkAuthState();
-  loadCompletedCards();
   
   // Refresh solved problems count when page becomes visible
   document.addEventListener('visibilitychange', () => {
@@ -117,17 +116,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const editCardId = urlParams.get('edit');
   if (editCardId) {
-  
+    // Wait for auth state to be ready, then check if we can edit
     auth.onAuthStateChanged(async (user) => {
-      if (user && ADMIN_EMAILS.includes(user.email)) {
-        await loadCards();
-        const cardToEdit = cards.find(c => c.id === editCardId);
-        if (cardToEdit) {
-          setTimeout(() => {
-            openAdminModal(cardToEdit);
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }, 500);
+      try {
+        if (user && ADMIN_EMAILS.includes(user.email)) {
+          // Ensure cards are loaded
+          if (cards.length === 0) {
+            await loadCards();
+          }
+          const cardToEdit = cards.find(c => c.id === editCardId);
+          if (cardToEdit) {
+            // Use requestAnimationFrame for smoother UI update
+            requestAnimationFrame(() => {
+              openAdminModal(cardToEdit);
+              window.history.replaceState({}, document.title, window.location.pathname);
+            });
+          }
         }
+      } catch (error) {
+        console.error('Error loading card for edit:', error);
       }
     });
   }
@@ -197,6 +204,8 @@ function setAuthMode(mode) {
   document.getElementById('loginError').classList.remove('show');
   loginForm.reset();
 }
+
+let authStateUnsubscribe = null;
 
 function checkAuthState() {
   auth.onAuthStateChanged(async (user) => {
@@ -314,9 +323,31 @@ function updateUIForLoggedOut() {
 
 // Cards Management
 async function loadCards() {
+  // Prevent multiple simultaneous loads
+  if (isLoadingCards) {
+    return;
+  }
+  
+  isLoadingCards = true;
+  
+  // Show loading spinner
+  if (cardsContainer) {
+    cardsContainer.innerHTML = `
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>جاري تحميل البطاقات...</p>
+      </div>
+    `;
+  }
+  
   try {
-    // Load all cards
-    const snapshot = await db.collection('cards').get();
+    // Load all cards with timeout protection
+    const snapshot = await Promise.race([
+      db.collection('cards').get(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      )
+    ]);
     
     cards = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -340,12 +371,25 @@ async function loadCards() {
       return bTime - aTime;
     });
     
+    isLoadingCards = false;
     renderCards();
   } catch (error) {
     console.error('Error loading cards:', error);
+    isLoadingCards = false;
 
     if (error.code === 'permission-denied') {
-      cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
+      if (cardsContainer) {
+        cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
+      }
+    } else if (error.message === 'Request timeout') {
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="text-align: center; color: var(--danger); grid-column: 1/-1; padding: 20px;">
+            <p>انتهت مهلة الاتصال. يرجى التحقق من اتصالك بالإنترنت.</p>
+            <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">إعادة المحاولة</button>
+          </div>
+        `;
+      }
     } else {
       cards = [];
       renderCards();
@@ -465,6 +509,15 @@ function updateSolvedProblemsCounter() {
 }
 
 function renderCards() {
+  // Don't render if we're still loading
+  if (isLoadingCards) {
+    return;
+  }
+  
+  if (!cardsContainer) {
+    return;
+  }
+  
   const authUser = auth.currentUser;
   if (!currentUser && !authUser) {
     cardsContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">سجل الدخول لعرض البطاقات</p>';
@@ -476,7 +529,8 @@ function renderCards() {
     isAdmin = ADMIN_EMAILS.includes(authUser.email);
   }
 
-  if (cards.length === 0) {
+  // Only show "no cards" message if we're sure loading is complete and cards array is empty
+  if (cards.length === 0 && !isLoadingCards) {
     let message = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">لا توجد بطاقات متاحة</p>';
     if (isAdmin) {
       message += '<p style="text-align: center; color: var(--primary); margin-top: 12px; font-weight: 600;">أنت مسؤول - اضغط على زر "إضافة بطاقة جديدة" أدناه لإنشاء أول بطاقة</p>';

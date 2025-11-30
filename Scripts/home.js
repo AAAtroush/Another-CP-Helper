@@ -33,6 +33,23 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Enable persistence for offline support
+try {
+  db.enablePersistence({
+    synchronizeTabs: true
+  }).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Firestore persistence failed: Multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      console.warn('Firestore persistence not available in this browser');
+    } else {
+      console.warn('Firestore persistence error:', err);
+    }
+  });
+} catch (e) {
+  console.warn('Could not enable Firestore persistence:', e);
+}
+
 let currentUser = null;
 let isAdmin = false;
 let cards = [];
@@ -247,12 +264,6 @@ async function handleAuthSubmit(e) {
     
     loginModal.classList.remove('active');
     loginForm.reset();
-    
-    setTimeout(async () => {
-      await loadCompletedCards();
-      await loadCards();
-      await loadSolvedProblemsCount();
-    }, 100);
   } catch (error) {
     errorMsg.textContent = getErrorMessage(error.code);
     errorMsg.classList.add('show');
@@ -323,33 +334,172 @@ function updateUIForLoggedOut() {
   updateSolvedProblemsCounter();
 }
 
+// Helper function to add timeout to promises
+function withTimeout(promise, timeoutMs, errorMessage = 'Request timeout') {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+    )
+  ]);
+}
+
+// Helper function to check if error is offline-related
+function isOfflineError(error) {
+  return error.code === 'unavailable' || 
+         error.message?.includes('offline') || 
+         error.message?.includes('Failed to get document because the client is offline') ||
+         error.code === 'deadline-exceeded';
+}
+
+// Helper function to try cache as fallback
+async function tryCacheFallback(queryFn, error) {
+  if (isOfflineError(error)) {
+    try {
+      console.log('Trying cache fallback...');
+      // Try to get from cache
+      if (typeof queryFn === 'function') {
+        // For queries, try with cache source
+        return await queryFn({ source: 'cache' });
+      }
+    } catch (cacheError) {
+      console.log('Cache fallback failed:', cacheError);
+      // If cache also fails, throw original error
+      throw error;
+    }
+  }
+  throw error;
+}
+
+// Helper function for retry logic with exponential backoff and offline handling
+async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000, useCacheFallback = true) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry on permission errors
+      if (error.code === 'permission-denied') {
+        throw error;
+      }
+      
+      // If offline and we have cache fallback, try it
+      if (isOfflineError(error) && useCacheFallback && attempt === maxRetries) {
+        try {
+          return await tryCacheFallback(fn, error);
+        } catch (cacheError) {
+          // If cache fails, continue with original error
+          lastError = error;
+        }
+      }
+      
+      // Don't retry on last attempt
+      if (attempt === maxRetries) {
+        break;
+      }
+      
+      // Don't retry immediately if offline - wait longer
+      if (isOfflineError(error)) {
+        const delay = initialDelay * Math.pow(2, attempt) * 2; // Longer delay for offline
+        console.log(`Offline detected, retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = initialDelay * Math.pow(2, attempt);
+        console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 // Cards Management
 async function loadCards() {
   // Prevent multiple simultaneous loads
   if (window.isLoadingCards) {
+    console.log('Cards already loading, skipping duplicate call');
     return;
   }
   
   window.isLoadingCards = true;
-  
-  // Show loading spinner
-  if (cardsContainer) {
-    cardsContainer.innerHTML = `
-      <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
-        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 16px; color: var(--text-secondary);">جاري تحميل البطاقات...</p>
-      </div>
-      <style>
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      </style>
-    `;
-  }
-  
+  let permissionDenied = false;
+  let loadTimeout;
+  let safetyTimeoutFired = false;
+  let requestCompleted = false;
+
   try {
-    // Load all cards
-    const snapshot = await db.collection('cards').get();
+    // Show loading spinner
+    if (cardsContainer) {
+      cardsContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+          <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <p style="margin-top: 16px; color: var(--text-secondary);">جاري تحميل البطاقات...</p>
+        </div>
+        <style>
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+      `;
+    }
+    
+    // Set a safety timeout to prevent infinite loading (45 seconds for slow networks)
+    loadTimeout = setTimeout(() => {
+      if (window.isLoadingCards && !requestCompleted) {
+        console.warn('Load cards safety timeout - forcing cleanup');
+        safetyTimeoutFired = true;
+        window.isLoadingCards = false;
+        if (cardsContainer) {
+          cardsContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+              <p style="color: var(--danger); margin-bottom: 16px;">انتهت مهلة التحميل</p>
+              <p style="color: var(--text-secondary); margin-bottom: 16px;">يبدو أن الاتصال بطيء جداً</p>
+              <button onclick="loadCards()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">إعادة المحاولة</button>
+            </div>
+          `;
+        }
+      }
+    }, 45000); // Increased to 45 seconds for slow networks
+    
+    // Load all cards with timeout and retry logic
+    // Increased timeout and retries for slow networks
+    // Try server first, fallback to cache if offline
+    let snapshot;
+    try {
+      snapshot = await retryWithBackoff(async () => {
+        return await withTimeout(
+          db.collection('cards').get({ source: 'server' }),
+          30000, // 30 second timeout per attempt (increased from 20)
+          'Connection timeout'
+        );
+      }, 4, 1500, true); // 4 retries with 1.5s initial delay, enable cache fallback
+    } catch (error) {
+      // If all retries failed and we're offline, try cache
+      if (isOfflineError(error)) {
+        console.log('Server request failed, trying cache...');
+        try {
+          snapshot = await db.collection('cards').get({ source: 'cache' });
+          console.log('Loaded cards from cache');
+        } catch (cacheError) {
+          // If cache also fails, throw original error
+          throw error;
+        }
+      } else {
+        throw error;
+      }
+    }
+    
+    requestCompleted = true;
+    clearTimeout(loadTimeout);
+    
+    // Don't process if safety timeout already fired
+    if (safetyTimeoutFired) {
+      console.warn('Safety timeout fired before request completed');
+      return;
+    }
     
     cards = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -373,20 +523,63 @@ async function loadCards() {
       return bTime - aTime;
     });
     
-    window.isLoadingCards = false;
+    // Success - render cards
     renderCards();
   } catch (error) {
+    requestCompleted = true;
+    clearTimeout(loadTimeout);
+    
+    // Don't show error if safety timeout already fired
+    if (safetyTimeoutFired) {
+      console.warn('Safety timeout fired, skipping error handling');
+      return;
+    }
+    
     console.error('Error loading cards:', error);
-    window.isLoadingCards = false;
 
     if (error.code === 'permission-denied') {
+      permissionDenied = true;
       if (cardsContainer) {
         cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
       }
     } else {
-      cards = [];
-      renderCards();
+      // On error, try to render existing cards if available
+      if (cards && cards.length > 0) {
+        console.log('Error loading cards, but using cached cards');
+        renderCards();
+      } else {
+        cards = [];
+        
+        // Show user-friendly error message
+        if (cardsContainer) {
+          const isNetworkError = error.message.includes('timeout') || 
+                                error.message.includes('Connection') ||
+                                error.code === 'unavailable' ||
+                                error.code === 'deadline-exceeded';
+          
+          const errorMessage = isNetworkError 
+            ? `
+              <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+                <p style="color: var(--danger); margin-bottom: 16px; font-weight: 600;">فشل تحميل البطاقات</p>
+                <p style="color: var(--text-secondary); margin-bottom: 8px;">يبدو أن الاتصال بالإنترنت بطيء أو غير مستقر</p>
+                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">${error.message || 'خطأ في الاتصال'}</p>
+                <button onclick="loadCards()" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600;">إعادة المحاولة</button>
+              </div>
+            `
+            : `
+              <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+                <p style="color: var(--danger); margin-bottom: 16px;">حدث خطأ أثناء تحميل البطاقات</p>
+                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">${error.message || 'خطأ غير معروف'}</p>
+                <button onclick="loadCards()" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px;">إعادة المحاولة</button>
+              </div>
+            `;
+          
+          cardsContainer.innerHTML = errorMessage;
+        }
+      }
     }
+  } finally {
+    window.isLoadingCards = false;
   }
 }
 
@@ -396,7 +589,14 @@ async function loadCompletedCards() {
       completedCards = [];
       return;
     }
-    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+    const userDoc = await retryWithBackoff(async () => {
+      return await withTimeout(
+        db.collection('users').doc(currentUser.uid).get(),
+        10000, // 10 second timeout
+        'Connection timeout'
+      );
+    }, 2, 1000);
+    
     if (userDoc.exists) {
       completedCards = userDoc.data().completedCards || [];
     } else {
@@ -404,7 +604,10 @@ async function loadCompletedCards() {
     }
   } catch (error) {
     console.error('Error loading completed cards:', error);
-    completedCards = [];
+    // Keep previous completedCards on error to avoid losing state
+    if (!completedCards || completedCards.length === 0) {
+      completedCards = [];
+    }
   }
 }
 
@@ -418,28 +621,56 @@ async function loadSolvedProblemsCount() {
       return;
     }
 
-    // Load all cards first
-    const cardsSnapshot = await db.collection('cards').get();
+    // Reuse already-loaded cards if available, otherwise load them
+    let cardsToProcess = [];
+    if (cards && cards.length > 0) {
+      // Use already-loaded cards - create a compatible structure with id property
+      cardsToProcess = cards.map(card => ({ 
+        id: card.id
+      }));
+    } else {
+      // Load cards if not already loaded (with timeout and retry)
+      const cardsSnapshot = await retryWithBackoff(async () => {
+        return await withTimeout(
+          db.collection('cards').get(),
+          15000, // 15 second timeout per attempt
+          'Connection timeout'
+        );
+      }, 2, 1000); // Fewer retries for stats (less critical)
+      cardsToProcess = cardsSnapshot.docs;
+    }
+    
     let totalSolved = 0;
     let totalProblems = 0;
     let totalSolving = 0;
 
     // For each card, check user statuses and count problems
-    for (const cardDoc of cardsSnapshot.docs) {
+    for (const cardDoc of cardsToProcess) {
       try {
-        // Count total problems in this card
-        const problemsSnapshot = await db.collection('cards')
-          .doc(cardDoc.id)
-          .collection('problems')
-          .get();
+        // Get card ID (handle both snapshot doc and plain object)
+        const cardId = cardDoc.id;
+        
+        // Count total problems in this card with timeout
+        const problemsSnapshot = await withTimeout(
+          db.collection('cards')
+            .doc(cardId)
+            .collection('problems')
+            .get(),
+          10000, // 10 second timeout per card
+          'Timeout loading problems'
+        );
         totalProblems += problemsSnapshot.size;
 
-        // Get user statuses
-        const statusDoc = await db.collection('cards')
-          .doc(cardDoc.id)
-          .collection('userStatuses')
-          .doc(currentUser.uid)
-          .get();
+        // Get user statuses with timeout
+        const statusDoc = await withTimeout(
+          db.collection('cards')
+            .doc(cardId)
+            .collection('userStatuses')
+            .doc(currentUser.uid)
+            .get(),
+          10000, // 10 second timeout per status
+          'Timeout loading statuses'
+        );
 
         if (statusDoc.exists) {
           const statuses = statusDoc.data().statuses || {};
@@ -453,7 +684,11 @@ async function loadSolvedProblemsCount() {
         }
       } catch (error) {
         // If permission denied or card has no problems, skip
-        console.warn(`Error loading statuses for card ${cardDoc.id}:`, error);
+        // Don't log timeout errors for individual cards to avoid spam
+        const cardId = cardDoc.id;
+        if (error.code !== 'permission-denied' && !error.message.includes('timeout')) {
+          console.warn(`Error loading statuses for card ${cardId}:`, error);
+        }
         continue;
       }
     }
@@ -464,10 +699,11 @@ async function loadSolvedProblemsCount() {
     updateSolvedProblemsCounter();
   } catch (error) {
     console.error('Error loading solved problems count:', error);
-    solvedProblemsCount = 0;
-    totalProblemsCount = 0;
-    solvingProblemsCount = 0;
-    updateSolvedProblemsCounter();
+    // Don't reset to 0 on error - keep previous values
+    // Only update if we have no previous values
+    if (solvedProblemsCount === 0 && totalProblemsCount === 0) {
+      updateSolvedProblemsCounter();
+    }
   }
 }
 
@@ -502,8 +738,8 @@ function updateSolvedProblemsCounter() {
 }
 
 function renderCards() {
-  // Don't render if we're still loading
-  if (window.isLoadingCards) {
+  // Don't render if we're still loading (unless we have cards to show)
+  if (window.isLoadingCards && (!cards || cards.length === 0)) {
     return;
   }
   
@@ -532,7 +768,12 @@ function renderCards() {
     return;
   }
 
-  cardsContainer.innerHTML = cards.map(card => createCardHTML(card)).join('');
+  // Render cards even if loading flag is still set (in case of stuck state)
+  if (cards && cards.length > 0) {
+    cardsContainer.innerHTML = cards.map(card => createCardHTML(card)).join('');
+  } else {
+    return; // Don't proceed if no cards to render
+  }
   
   cards.forEach(card => {
     const cardElement = document.getElementById(`card-${card.id}`);

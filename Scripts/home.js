@@ -40,7 +40,7 @@ let completedCards = [];
 let solvedProblemsCount = 0;
 let totalProblemsCount = 0;
 let solvingProblemsCount = 0;
-let isLoadingCards = false;
+window.isLoadingCards = false;
 
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -223,7 +223,7 @@ function checkAuthState() {
       updateUIForLoggedOut();
       cards = [];
       completedCards = [];
-      isLoadingCards = false;
+      window.isLoadingCards = false;
       renderCards();
     }
   });
@@ -326,30 +326,30 @@ function updateUIForLoggedOut() {
 // Cards Management
 async function loadCards() {
   // Prevent multiple simultaneous loads
-  if (isLoadingCards) {
+  if (window.isLoadingCards) {
     return;
   }
   
-  isLoadingCards = true;
+  window.isLoadingCards = true;
   
   // Show loading spinner
   if (cardsContainer) {
     cardsContainer.innerHTML = `
-      <div class="loading-spinner">
-        <div class="spinner"></div>
-        <p>جاري تحميل البطاقات...</p>
+      <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
+        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 16px; color: var(--text-secondary);">جاري تحميل البطاقات...</p>
       </div>
+      <style>
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      </style>
     `;
   }
   
   try {
-    // Load all cards with timeout protection
-    const snapshot = await Promise.race([
-      db.collection('cards').get(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 30000)
-      )
-    ]);
+    // Load all cards
+    const snapshot = await db.collection('cards').get();
     
     cards = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -373,24 +373,15 @@ async function loadCards() {
       return bTime - aTime;
     });
     
-    isLoadingCards = false;
+    window.isLoadingCards = false;
     renderCards();
   } catch (error) {
     console.error('Error loading cards:', error);
-    isLoadingCards = false;
+    window.isLoadingCards = false;
 
     if (error.code === 'permission-denied') {
       if (cardsContainer) {
         cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
-      }
-    } else if (error.message === 'Request timeout') {
-      if (cardsContainer) {
-        cardsContainer.innerHTML = `
-          <div style="text-align: center; color: var(--danger); grid-column: 1/-1; padding: 20px;">
-            <p>انتهت مهلة الاتصال. يرجى التحقق من اتصالك بالإنترنت.</p>
-            <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">إعادة المحاولة</button>
-          </div>
-        `;
       }
     } else {
       cards = [];
@@ -512,7 +503,7 @@ function updateSolvedProblemsCounter() {
 
 function renderCards() {
   // Don't render if we're still loading
-  if (isLoadingCards) {
+  if (window.isLoadingCards) {
     return;
   }
   
@@ -532,7 +523,7 @@ function renderCards() {
   }
 
   // Only show "no cards" message if we're sure loading is complete and cards array is empty
-  if (cards.length === 0 && !isLoadingCards) {
+  if (cards.length === 0 && !window.isLoadingCards) {
     let message = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">لا توجد بطاقات متاحة</p>';
     if (isAdmin) {
       message += '<p style="text-align: center; color: var(--primary); margin-top: 12px; font-weight: 600;">أنت مسؤول - اضغط على زر "إضافة بطاقة جديدة" أدناه لإنشاء أول بطاقة</p>';

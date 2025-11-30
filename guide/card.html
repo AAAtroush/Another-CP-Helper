@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>البطاقة - CP Helper</title>
-  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="../Styles/home.css">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -111,7 +111,7 @@
   <!-- HEADER -->
   <header class="main-header">
     <div class="header-content">
-      <h1><a href="home.html" style="text-decoration: none; color: inherit;">← العودة للصفحة الرئيسية</a></h1>
+      <h1><a href="../index.html" style="text-decoration: none; color: inherit;">← العودة للصفحة الرئيسية</a></h1>
     </div>
   </header>
 
@@ -179,7 +179,7 @@
             <div class="error">
               <h2>بطاقة غير موجودة</h2>
               <p>لم يتم العثور على البطاقة المطلوبة</p>
-              <a href="home.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
+              <a href="../index.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
             </div>
           `;
           return;
@@ -197,7 +197,7 @@
           <div class="error">
             <h2>حدث خطأ</h2>
             <p>${error.message}</p>
-            <a href="home.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
+            <a href="../index.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
           </div>
         `;
       }
@@ -229,7 +229,7 @@
     // Edit button click
     document.getElementById('editContentBtn').addEventListener('click', () => {
       if (currentCard) {
-        window.location.href = `home.html?edit=${currentCard.id}`;
+        window.location.href = `../index.html?edit=${currentCard.id}`;
       }
     });
 
@@ -239,7 +239,7 @@
         <div class="error">
           <h2>معرف البطاقة غير موجود</h2>
           <p>الرجاء تحديد بطاقة للعرض</p>
-          <a href="home.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
+          <a href="../index.html" style="color: var(--primary); text-decoration: none;">← العودة للصفحة الرئيسية</a>
         </div>
       `;
     }

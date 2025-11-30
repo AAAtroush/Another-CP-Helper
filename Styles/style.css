@@ -1,0 +1,703 @@
+:root {
+  --cell-size: 40px;
+  --line-color: #e0e7ff;
+  --bg-color: #ffffff;
+  --sidebar-width: 300px;
+  
+  /* Modern Color Palette */
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #818cf8;
+  --secondary: #8b5cf6;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  
+  /* Background Colors */
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-dark: #1e293b;
+  --bg-dark-card: #0f172a;
+  
+  /* Text Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-light: #94a3b8;
+  --text-white: #ffffff;
+  
+  /* Borders & Shadows */
+  --border-color: #e2e8f0;
+  --border-radius: 12px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ====== RESET & BASE ====== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Cairo", "Tajawal", "Noto Sans Arabic", "Segoe UI", "Tahoma", "Arial", -apple-system, BlinkMacSystemFont, "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  padding: 20px;
+  line-height: 1.8;
+  animation: fadeInBody 0.5s ease-in-out;
+}
+
+@keyframes fadeInBody {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ====== HEADER ====== */
+.main-header {
+  max-width: 1800px;
+  margin: 0 auto 24px auto;
+  text-align: center;
+  padding: 24px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+.header-content h1 {
+  margin: 0 0 8px 0;
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ====== CONTAINER ====== */
+.container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  gap: 24px;
+  max-width: 1800px;
+  margin: 0 auto;
+  align-items: start;
+  min-height: calc(100vh - 40px);
+  animation: slideUp 0.6s ease-out;
+  min-height: 100vh;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ====== SIDEBAR CARD ====== */
+.controls-card {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* ====== SIDEBAR TABS ====== */
+.tab-buttons {
+  display: flex;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  padding: 6px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.tab-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-white);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ====== TAB CONTENT ====== */
+.tab-contents {
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content {
+  display: none;
+  padding: 20px;
+  background: var(--bg-card);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ====== FORM GROUPS & BUTTONS ====== */
+
+.bottom-border {
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.rotate-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.half-btn {
+  flex: 1;
+}
+
+.full-btn {
+  width: 100%;
+  padding: 12px !important;
+  font-size: 15px !important;
+}
+
+.fill-input {
+  flex: 1;
+  min-width: 80px;
+}
+
+.fill-input-large {
+  flex: 2;
+  min-width: 120px;
+}
+
+/* Input Styles */
+input[type="text"],
+input[type="number"],
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-color);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-group label input[type="range"] {
+  width: 70px;
+  min-width: 70px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: var(--shadow-md);
+}
+
+input[type="number"] {
+  width: 80px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+input[type="text"] {
+  width: 80px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.fill-input-large {
+  width: auto;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+input[type="color"] {
+  width: 50px;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+input[type="color"]:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Styles */
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-white);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  background: var(--text-secondary) !important;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Textarea */
+#cfInput {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  resize: vertical;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+#cfInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* ====== GRID ====== */
+.grid-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: auto;
+  height: 100%;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  min-height: 500px;
+}
+
+#grid {
+  display: grid;
+  gap: 0;
+  justify-self: center;
+  align-self: center;
+  border: 1px solid #a4b3c7;
+  border-radius: 0;
+  overflow: visible;
+  background: var(--bg-card);
+}
+
+#grid .cell .index {
+  color: var(--text-light);
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 80%;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0 4px;
+  border-top-left-radius: 3px;
+  pointer-events: none;
+}
+
+/* ====== CELLS ====== */
+.cell {
+  position: relative;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border: 1px solid #64748b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  user-select: none;
+  cursor: pointer;
+  background-color: var(--bg-color);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cell:hover {
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+  border-color: #475569;
+}
+
+.cell.filled {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  color: var(--text-white);
+}
+
+.cell input {
+  width: 85%;
+  height: 85%;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  font-weight: 600;
+  outline: none;
+  color: inherit;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.cell input:focus {
+  background: rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.cell input:disabled {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* ====== FORMULAS SECTION ====== */
+
+.formulas-card {
+  width: 100%;
+  margin-top: 24px;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-dark-card) 100%);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Formulas Tabs */
+.formulas-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.formulas-tab-btn {
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.formulas-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.formulas-tab-btn.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: var(--text-white);
+  border-color: transparent;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Formulas Content */
+.formulas-contents .formula-section {
+  display: none;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 24px;
+  border-radius: var(--border-radius);
+  color: var(--text-light);
+  font-family: "Fira Code", "Consolas", "Monaco", monospace;
+  font-size: 14px;
+  overflow-x: auto;
+  line-height: 1.6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.formulas-contents .formula-section.active {
+  display: block;
+}
+
+/* Headings inside formulas section */
+.formula-section h4 {
+  color: var(--text-white);
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 700;
+  border-right: 4px solid var(--accent);
+  padding-right: 12px;
+  margin-bottom: 20px;
+}
+
+.formula-section h4:not(:first-child) {
+  margin-top: 32px;
+}
+
+/* Code block styling */
+.formula-section pre {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  color: var(--text-white);
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 16px;
+}
+
+.formula-section code {
+  font-family: "Fira Code", "Consolas", "Monaco", monospace;
+  color: var(--text-white);
+  font-size: 13px;
+}
+
+/* highlight keywords lightly */
+.formula-section code span.keyword {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Scrollbar Styling */
+.formula-section pre::-webkit-scrollbar,
+.formulas-contents::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.formula-section pre::-webkit-scrollbar-track,
+.formulas-contents::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.formula-section pre::-webkit-scrollbar-thumb,
+.formulas-contents::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.formula-section pre::-webkit-scrollbar-thumb:hover,
+.formulas-contents::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive tweaks */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 960px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .controls-card {
+    width: 100%;
+  }
+  
+  .formulas-tabs {
+    justify-content: flex-start;
+  }
+  
+  .formula-section {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    padding: 12px;
+  }
+  
+  .formulas-tabs {
+    justify-content: center;
+  }
+  
+  .formulas-tab-btn {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+  
+  .formula-section {
+    padding: 16px;
+    font-size: 12px;
+  }
+  
+  .grid-wrapper {
+    padding: 16px;
+  }
+}
+

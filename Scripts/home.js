@@ -346,7 +346,7 @@ function renderCards() {
       // Card click - navigate to card page
       cardElement.addEventListener('click', (e) => {
         if (!e.target.closest('.card-actions')) {
-          window.location.href = `card.html?id=${card.id}`;
+          window.location.href = `./guide/card.html?id=${card.id}`;
         }
       });
 
@@ -514,7 +514,7 @@ async function handleAdminSubmit(e) {
     // If we came from card page, redirect back
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('edit') && savedCardId) {
-      window.location.href = `card.html?id=${savedCardId}`;
+      window.location.href = `./guide/card.html?id=${savedCardId}`;
     }
   } catch (error) {
     console.error('Error saving card:', error);

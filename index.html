@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grid Visualizer - CP Helper</title>
+  <title>مصور الشبكة - مساعد البرمجة التنافسية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
@@ -16,8 +19,8 @@
   <!-- HEADER -->
   <header class="main-header">
     <div class="header-content">
-      <h1>🎯 Grid Visualizer</h1>
-      <p class="header-subtitle">Interactive matrix tool for competitive programming</p>
+      <h1>اداة عرض الشبكة</h1>
+      <p class="header-subtitle">أداة المصفوفة التفاعلية للبرمجة التنافسية</p>
     </div>
   </header>
 
@@ -29,9 +32,9 @@
 
       <!-- TAB BUTTONS -->
       <div class="tab-buttons">
-        <button class="tab-btn active" data-tab="tab-controls">Controls</button>
-        <button class="tab-btn" data-tab="tab-input">Input / Export</button>
-        <button class="tab-btn" data-tab="tab-history">History</button>
+        <button class="tab-btn active" data-tab="tab-controls">التحكم</button>
+        <button class="tab-btn" data-tab="tab-input">الإدخال / التصدير</button>
+        <button class="tab-btn" data-tab="tab-history">التاريخ</button>
       </div>
 
       <!-- TAB CONTENTS -->
@@ -39,57 +42,58 @@
 
         <!-- CONTROLS TAB -->
         <div class="tab-content active" id="tab-controls">
-          <h3>Grid Controls</h3>
-          <div class="form-group">
-            <label>Rows: <input id="rows" type="number" value="10" min="1"></label>
-            <label>Cols: <input id="cols" type="number" value="10" min="1"></label>
+          <h3 class="bottom-border">تحكم الشبكة</h3>
+          <div class="form-group bottom-border">
+              <label>صفوف: <input id="rows" type="number" value="10" min="1"></label>
+              <label>أعمدة: <input id="cols" type="number" value="10" min="1"></label>
           </div>
-          <div class="form-group">
-            <label>Cell Size: <input id="cellSize" type="range" min="10" max="100" value="40"></label>
-            <label>Color: <input id="colorPicker" type="color" value="#1f1f1f"></label>
+          <div class="form-group bottom-border">
+            <label>الحجم: <input id="cellSize" type="range" min="10" max="100" value="40"></label>
+            <label>اللون: <input id="colorPicker" type="color" value="#1f1f1f"></label>
           </div>
-          <div class="form-group">
-            <button id="toggleIndices">Toggle Indices</button>
-            <button id="indexMode">0-Based Index</button>
+          <div class="form-group bottom-border">
+            <button id="toggleInputs" class="full-btn">🖊️ وضع الكتابة</button>
           </div>
-          <div class="form-group rotate-row">
-            <button id="rotateCW" class="half-btn">Rotate ⟳</button>
-            <button id="rotateCCW" class="half-btn">Rotate ⟲</button>
+          <div class="form-group rotate-row bottom-border">
+            <button id="toggleIndices" class="half-btn">إظهار الـindex</button>
+            <button dir="ltr" id="indexMode" class="half-btn">0-based indexed</button>
           </div>
-          <div class="form-group">
-            <label>Fill With Value:</label>
-            <input id="fillValueInput" type="text" placeholder="value">
-            <button id="fillValueBtn">Fill Grid</button>
+          <div class="form-group rotate-row bottom-border">
+            <button id="rotateCW" class="half-btn">دوران ⟲</button>
+            <button id="rotateCCW" class="half-btn">دوران ⟳</button>
           </div>
-          <div class="form-group">
-            <button id="fillRandom">Random Fill (0-9)</button>
-            <button id="fillBinary">Random Binary Grid</button>
-            <button id="randomGrid">Generate Random Grid</button>
+          <div class="form-group bottom-border">
+            <input id="fillValueInput" type="text" placeholder="قيمة التعبئة" class="fill-input-large">
+            <button id="fillValueBtn">تعبئة</button>
           </div>
-          <button id="clearAll" class="full-btn">Clear All</button>
+          <div class="form-group bottom-border">
+            <button id="fillRandom">عشوائي (0-9)</button>
+            <button id="fillBinary">شبكة binary</button>
+            <button id="randomGrid">شبكة عشوائية</button>
+          </div>
+          <button id="clearAll" class="full-btn">مسح الكل</button>
         </div>
 
         <!-- INPUT / EXPORT TAB -->
         <div class="tab-content" id="tab-input">
-          <h3>Import / Export</h3>
-          <textarea id="cfInput" rows="6" placeholder="Paste input here..."></textarea>
+          <h3 class="bottom-border">الاستيراد / التصدير</h3>
+          <textarea id="cfInput" rows="6" placeholder="الصق الإدخال هنا..."></textarea>
           <div class="form-group">
-            <button id="importCF">Import CF Input</button>
-            <button id="exportCF">Copy as CF Input</button>
+            <button id="importCF">استيراد إدخال CF</button>
+            <button id="exportCF">نسخ كإدخال CF</button>
           </div>
         </div>
 
         <!-- HISTORY TAB -->
         <div class="tab-content" id="tab-history">
-          <h3>History & Templates</h3>
-          <div class="form-group rotate-row">
-            <button id="undoBtn" class="half-btn">Undo</button>
-            <button id="redoBtn" class="half-btn">Redo</button>
+          <h3 class="bottom-border">التاريخ والقوالب</h3>
+          <div class="form-group rotate-row bottom-border">
+            <button id="undoBtn" class="half-btn">تراجع</button>
+            <button id="redoBtn" class="half-btn">إعادة</button>
           </div>
           <div class="form-group">
-            <button id="saveTemplate">Save Template</button>
-            <button id="loadTemplate">Load Template</button>
-            <button id="toggleInputs">Disable Inputs</button>
+            <button id="saveTemplate">حفظ القالب</button>
+            <button id="loadTemplate">تحميل القالب</button>
           </div>
         </div>
 
@@ -109,20 +113,20 @@
   <section class="formulas-card">
 
     <div class="formulas-tabs">
-      <button class="formulas-tab-btn active" data-tab="f-rotate">Rotate / Flip</button>
-      <button class="formulas-tab-btn" data-tab="f-prefix">2D Prefix Sum</button>
-      <button class="formulas-tab-btn" data-tab="f-mult">Multiply / Exponent</button>
-      <button class="formulas-tab-btn" data-tab="f-transpose">Transpose</button>
-      <button class="formulas-tab-btn" data-tab="f-det">Determinant</button>
-      <button class="formulas-tab-btn" data-tab="f-others">Other</button>
+      <button class="formulas-tab-btn active" data-tab="f-rotate">دوران / انعكاس</button>
+      <button class="formulas-tab-btn" data-tab="f-prefix">مجموع البادئة ثنائي الأبعاد</button>
+      <button class="formulas-tab-btn" data-tab="f-mult">ضرب / أس</button>
+      <button class="formulas-tab-btn" data-tab="f-transpose">منقول</button>
+      <button class="formulas-tab-btn" data-tab="f-det">المحدد</button>
+      <button class="formulas-tab-btn" data-tab="f-others">أخرى</button>
     </div>
 
     <div class="formulas-contents">
 
       <!-- ROTATE / FLIP -->
       <div class="formula-section active" id="f-rotate">
-        <h4>Rotate 90° Clockwise (In-Place)</h4>
-        <pre><code class="language-c++">// rotate NxN matrix in-place (clockwise)
+        <h4>دوران 90° في اتجاه عقارب الساعة (في المكان)</h4>
+        <pre dir="ltr"><code class="language-c++">// تدوير مصفوفة NxN في المكان (باتجاه عقارب الساعة)
 void rotateClockwise(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size();
     for (int i = 0; i < n/2; ++i) {
@@ -136,8 +140,8 @@ void rotateClockwise(vector&lt;vector&lt;int&gt;&gt;& a) {
     }
 }</code></pre>
 
-        <h4>Flip Horizontal / Vertical</h4>
-        <pre><code class="language-c++">// flip horizontally (mirror left-right)
+        <h4>انعكاس أفقي / عمودي</h4>
+        <pre dir="ltr"><code class="language-c++">// انعكاس أفقي (مرآة من اليسار إلى اليمين)
 void flipHorizontal(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
     for (int i = 0; i < n; ++i)
@@ -145,7 +149,7 @@ void flipHorizontal(vector&lt;vector&lt;int&gt;&gt;& a) {
             swap(a[i][j], a[i][m-1-j]);
 }
 
-// flip vertically (mirror top-bottom)
+// انعكاس عمودي (مرآة من الأعلى إلى الأسفل)
 void flipVertical(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size();
     for (int i = 0; i < n/2; ++i)
@@ -155,8 +159,8 @@ void flipVertical(vector&lt;vector&lt;int&gt;&gt;& a) {
 
       <!-- 2D PREFIX SUM -->
       <div class="formula-section" id="f-prefix">
-        <h4>2D Prefix Sum (build and query)</h4>
-        <pre><code class="language-c++">// build prefix sum p where p[i+1][j+1] = sum of a[0..i][0..j]
+        <h4>مجموع البادئة ثنائي الأبعاد (بناء واستعلام)</h4>
+        <pre dir="ltr"><code class="language-c++">// بناء مجموع البادئة p حيث p[i+1][j+1] = مجموع a[0..i][0..j]
 vector&lt;vector&lt;long long&gt;&gt; buildPrefix(const vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
     vector&lt;vector&lt;long long&gt;&gt; p(n+1, vector<long long>(m+1, 0));
@@ -166,7 +170,7 @@ vector&lt;vector&lt;long long&gt;&gt; buildPrefix(const vector&lt;vector&lt;int&
     return p;
 }
 
-// query sum of submatrix (r1..r2, c1..c2) inclusive (0-based)
+// استعلام مجموع المصفوفة الفرعية (r1..r2, c1..c2) شاملة (قائمة على الصفر)
 long long querySum(const vector&lt;vector&lt;long long&gt;&gt;& p, int r1, int c1, int r2, int c2) {
     return p[r2+1][c2+1] - p[r1][c2+1] - p[r2+1][c1] + p[r1][c1];
 }</code></pre>
@@ -174,8 +178,8 @@ long long querySum(const vector&lt;vector&lt;long long&gt;&gt;& p, int r1, int c
 
       <!-- MULTIPLICATION & EXPONENTIATION -->
       <div class="formula-section" id="f-mult">
-        <h4>Naive Matrix Multiplication</h4>
-        <pre><code class="language-c++">vector&lt;vector&lt;long long&gt;&gt; multiply(const vector&lt;vector&lt;int&gt;&gt;& A,
+        <h4>ضرب المصفوفة البسيط</h4>
+        <pre dir="ltr"><code class="language-c++">vector&lt;vector&lt;long long&gt;&gt; multiply(const vector&lt;vector&lt;int&gt;&gt;& A,
                                    const vector&lt;vector&lt;int&gt;&gt;& B) {
     int n = A.size(), k = A[0].size(), m = B[0].size();
     vector&lt;vector&lt;long long&gt;&gt; C(n, vector<long long>(m, 0));
@@ -186,8 +190,8 @@ long long querySum(const vector&lt;vector&lt;long long&gt;&gt;& p, int r1, int c
     return C;
 }</code></pre>
 
-        <h4>Matrix Exponentiation (square)</h4>
-        <pre><code class="language-c++">using Mat = vector&lt;vector&lt;long long&gt;&gt;;
+        <h4>أس المصفوفة (مربع)</h4>
+        <pre dir="ltr"><code class="language-c++">using Mat = vector&lt;vector&lt;long long&gt;&gt;;
 
 Mat matMul(const Mat& A, const Mat& B, long long mod = -1) {
     int n = A.size();
@@ -216,8 +220,8 @@ Mat matPow(Mat base, long long exp, long long mod = -1) {
 
       <!-- TRANSPOSE -->
       <div class="formula-section" id="f-transpose">
-        <h4>Transpose</h4>
-        <pre><code class="language-c++">// in-place transpose (square)
+        <h4>منقول المصفوفة</h4>
+        <pre dir="ltr"><code class="language-c++">// منقول في المكان (مربع)
 void transposeSquare(vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size();
     for (int i = 0; i < n; ++i)
@@ -225,7 +229,7 @@ void transposeSquare(vector&lt;vector&lt;int&gt;&gt;& a) {
             swap(a[i][j], a[j][i]);
 }
 
-// transpose rectangular -> new matrix
+// منقول مستطيل -> مصفوفة جديدة
 vector&lt;vector&lt;int&gt;&gt; transpose(const vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
     vector&lt;vector&lt;int&gt;&gt; b(m, vector<int>(n));
@@ -238,8 +242,8 @@ vector&lt;vector&lt;int&gt;&gt; transpose(const vector&lt;vector&lt;int&gt;&gt;&
 
       <!-- DETERMINANT -->
       <div class="formula-section" id="f-det">
-        <h4>Determinant via Gaussian elimination</h4>
-        <pre><code class="language-c++">double determinant(vector&lt;vector&lt;double&gt;&gt; a) {
+        <h4>المحدد باستخدام الحذف الغاوسي</h4>
+        <pre dir="ltr"><code class="language-c++">double determinant(vector&lt;vector&lt;double&gt;&gt; a) {
     int n = a.size();
     double det = 1;
     const double EPS = 1e-12;
@@ -262,19 +266,19 @@ vector&lt;vector&lt;int&gt;&gt; transpose(const vector&lt;vector&lt;int&gt;&gt;&
 
       <!-- OTHER -->
       <div class="formula-section" id="f-others">
-        <h4>Helpers</h4>
-        <pre><code class="language-c++">// fill with value
+        <h4>مساعدات</h4>
+        <pre dir="ltr"><code class="language-c++">// تعبئة بالقيمة
 void fillMatrix(vector&lt;vector&lt;int&gt;&gt;& a, int val) {
     for (auto &r : a) fill(r.begin(), r.end(), val);
 }
 
-// rotate non-square: returns new matrix
+// تدوير غير مربع: يُرجع مصفوفة جديدة
 vector&lt;vector&lt;int&gt;&gt; rotate90New(const vector&lt;vector&lt;int&gt;&gt;& a) {
     int n = a.size(), m = a[0].size();
     vector&lt;vector&lt;int&gt;&gt; b(m, vector<int>(n));
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < m; ++j)
-            b[j][n-1-i] = a[i][j]; // clockwise
+            b[j][n-1-i] = a[i][j]; // باتجاه عقارب الساعة
     return b;
 }</code></pre>
       </div>

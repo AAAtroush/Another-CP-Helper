@@ -32,7 +32,7 @@ const rotateCCWBtn = document.getElementById("rotateCCW");
 
 let showIndices = false;
 let oneBased = false;
-let inputsDisabled = false;
+let inputsDisabled = false; // false = writing mode, true = coloring mode
 
 let painting = false;
 let erasing = false;
@@ -144,7 +144,7 @@ toggleIndicesBtn?.addEventListener("click", () => {
 
 indexModeBtn?.addEventListener("click", () => {
   oneBased = !oneBased;
-  indexModeBtn.textContent = oneBased ? "1-Based Index" : "0-Based Index";
+  indexModeBtn.textContent = oneBased ? "1-based indexed" : "0-based indexed";
   updateIndices();
 });
 
@@ -199,8 +199,9 @@ function buildGrid(save = true) {
         cell.style.backgroundColor = match.color || "white";
       }
 
-      // events: click paint, contextmenu erase
+      // events: click paint, contextmenu erase (only in coloring mode)
       cell.addEventListener("mousedown", (e) => {
+        if (!inputsDisabled) return; // Only allow painting in coloring mode
         if (e.button === 0) {
           cell.style.backgroundColor = colorPicker.value;
           saveHistory();
@@ -211,10 +212,13 @@ function buildGrid(save = true) {
       });
 
       cell.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
+        if (inputsDisabled) {
+          e.preventDefault(); // Only prevent context menu in coloring mode
+        }
       });
 
       cell.addEventListener("mouseover", () => {
+        if (!inputsDisabled) return; // Only allow painting in coloring mode
         if (painting) {
           cell.style.backgroundColor = colorPicker.value;
         } else if (erasing) {
@@ -226,9 +230,7 @@ function buildGrid(save = true) {
       input.type = "text";
       input.value = match ? match.value : "";
       input.disabled = inputsDisabled;
-      if (inputsDisabled) {
-        input.style.pointerEvents = "none";
-      }
+      input.style.pointerEvents = inputsDisabled ? "none" : "auto";
       input.addEventListener("input", () => {
         if (!isInitializing) saveHistory();
       });
@@ -254,9 +256,9 @@ function buildGrid(save = true) {
 
 function importCFInput() {
   const ta = document.getElementById("cfInput");
-  if (!ta) return alert("CF input textarea not found.");
+  if (!ta) return alert("لم يتم العثور على منطقة إدخال CF.");
   const text = ta.value.trim();
-  if (!text) return alert("Input is empty.");
+  if (!text) return alert("الإدخال فارغ.");
 
   const lines = text
     .split("\n")
@@ -270,7 +272,7 @@ function importCFInput() {
   const cols = matrix[0].length;
   for (let r = 0; r < rows; r++) {
     if (matrix[r].length !== cols) {
-      return alert("Error: Not all rows have the same number of columns.");
+      return alert("خطأ: ليس لجميع الصفوف نفس عدد الأعمدة.");
     }
   }
 
@@ -304,7 +306,7 @@ async function exportCF() {
 
   try {
     await navigator.clipboard.writeText(out);
-    alert("CF grid copied to clipboard!");
+    alert("تم نسخ شبكة CF إلى الحافظة!");
   } catch (err) {
     // fallback
     const ta = document.createElement("textarea");
@@ -313,7 +315,7 @@ async function exportCF() {
     ta.select();
     document.execCommand("copy");
     ta.remove();
-    alert("Copied (fallback).");
+    alert("تم النسخ (احتياطي).");
   }
 }
 
@@ -393,15 +395,15 @@ const TEMPLATE_KEY = "gridTemplate_v1";
 function saveTemplate() {
   const snap = currentStateSnapshot();
   localStorage.setItem(TEMPLATE_KEY, JSON.stringify(snap));
-  alert("Template saved to localStorage.");
+    alert("تم حفظ القالب في التخزين المحلي.");
 }
 
 function loadTemplate() {
   const raw = localStorage.getItem(TEMPLATE_KEY);
-  if (!raw) return alert("No template found in localStorage.");
+  if (!raw)     return alert("لم يتم العثور على قالب في التخزين المحلي.");
   const obj = JSON.parse(raw);
   if (!obj || !obj.rows || !obj.cols || !obj.data)
-    return alert("Template corrupted.");
+    return alert("القالب تالف.");
   isInitializing = true;
   rowsInput.value = obj.rows;
   colsInput.value = obj.cols;
@@ -434,9 +436,14 @@ function toggleInputs() {
         inp.style.pointerEvents = "auto";
       }
     });
+  // Update button text to reflect current mode
   toggleInputsBtn.textContent = inputsDisabled
-    ? "Enable Inputs"
-    : "Disable Inputs";
+    ? "🎨 وضع التلوين"
+    : "🖊️ وضع الكتابة";
+  
+  // Stop any ongoing painting/erasing when switching modes
+  painting = false;
+  erasing = false;
 }
 
 function rotateGrid(clockwise = true) {
@@ -484,6 +491,8 @@ function rotateGrid(clockwise = true) {
 }
 
 document.addEventListener("mousedown", (e) => {
+  // Only allow painting/erasing in coloring mode
+  if (!inputsDisabled) return;
   // left button = paint, right button = erase
   if (e.button === 0) painting = true;
   if (e.button === 2) erasing = true;
@@ -493,7 +502,12 @@ document.addEventListener("mouseup", (e) => {
   painting = false;
   erasing = false;
 });
-grid.addEventListener("contextmenu", (e) => e.preventDefault());
+grid.addEventListener("contextmenu", (e) => {
+  // Only prevent context menu in coloring mode
+  if (inputsDisabled) {
+    e.preventDefault();
+  }
+});
 
 function updateCellSize() {
   const size = cellSizeInput.value + "px";
@@ -529,6 +543,10 @@ buildGrid();
 updateCellSize();
 updateIndices();
 updateUndoRedoButtons();
+// Initialize button text
+if (toggleInputsBtn) {
+  toggleInputsBtn.textContent = inputsDisabled ? "🎨 وضع التلوين" : "🖊️ وضع الكتابة";
+}
 
 // Formulas tabs
 document.querySelectorAll(".formulas-tab-btn").forEach((tab) => {

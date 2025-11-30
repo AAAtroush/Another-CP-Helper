@@ -137,6 +137,9 @@ body {
     height: 100%;
     margin: 0 auto;
     animation: slideUp 0.6s ease-out;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
 }
 
 @keyframes slideUp {
@@ -156,9 +159,9 @@ body {
   border-radius: var(--border-radius);
   padding: 40px;
   text-align: center;
-  margin-bottom: 24px;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-color);
+  grid-column: 1 / -1;
 }
 
 .welcome-section h2 {
@@ -180,9 +183,9 @@ body {
 /* ====== CARDS CONTAINER ====== */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, calc((100% - 48px) / 3)));
   gap: 24px;
-  margin-bottom: 24px;
+  grid-column: 1 / -1;
 }
 
 /* ====== CARD STYLES ====== */
@@ -514,7 +517,7 @@ body {
 /* ====== ADMIN CONTROLS ====== */
 .admin-controls {
   text-align: center;
-  margin-top: 24px;
+  grid-column: 1 / -1;
 }
 
 .add-card-btn {

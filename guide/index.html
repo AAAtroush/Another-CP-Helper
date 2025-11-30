@@ -11,6 +11,18 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <style>
+    /* Override container for full width */
+    .container {
+      max-width: 100% !important;
+      grid-template-columns: 1fr !important;
+      padding: 0 20px;
+    }
+    
+    #cardPageContent {
+      width: 100%;
+      max-width: 100%;
+    }
+    
     .card-page-header {
       background: var(--bg-card);
       border-radius: var(--border-radius);
@@ -18,6 +30,7 @@
       margin-bottom: 24px;
       box-shadow: var(--shadow-lg);
       border: 1px solid var(--border-color);
+      width: 100%;
     }
     .card-page-title {
       font-size: 32px;
@@ -50,6 +63,21 @@
       line-height: 1.8;
       color: var(--text-primary);
       min-height: 200px;
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    /* Make content use full width */
+    @media (min-width: 768px) {
+      .container {
+        padding: 0 40px;
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .container {
+        padding: 0 60px;
+      }
     }
     .card-page-content h1, .card-page-content h2, .card-page-content h3 {
       color: var(--text-primary);

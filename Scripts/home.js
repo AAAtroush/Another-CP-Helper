@@ -272,26 +272,33 @@ function updateUIForLoggedOut() {
 // Cards Management
 async function loadCards() {
   try {
-    let snapshot;
-    try {
-      snapshot = await db.collection('cards').orderBy('createdAt', 'desc').get();
-    } catch (orderError) {
-      console.warn('OrderBy failed, loading without order:', orderError);
-      snapshot = await db.collection('cards').get();
-    }
+    // Load all cards
+    const snapshot = await db.collection('cards').get();
     
     cards = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    if (cards.length > 0 && cards[0].createdAt) {
-      cards.sort((a, b) => {
-        const aTime = a.createdAt?.toMillis?.() || 0;
-        const bTime = b.createdAt?.toMillis?.() || 0;
-        return bTime - aTime;
-      });
-    }
+    // Sort by cardId (ascending - lower ID appears first)
+    cards.sort((a, b) => {
+      const aId = a.cardId !== undefined && a.cardId !== null ? (typeof a.cardId === 'number' ? a.cardId : parseInt(a.cardId)) : 999999;
+      const bId = b.cardId !== undefined && b.cardId !== null ? (typeof b.cardId === 'number' ? b.cardId : parseInt(b.cardId)) : 999999;
+      
+      // If both have valid IDs, sort by ID
+      if (!isNaN(aId) && !isNaN(bId)) {
+        return aId - bId;
+      }
+      
+      // If only one has ID, put it first
+      if (!isNaN(aId) && isNaN(bId)) return -1;
+      if (isNaN(aId) && !isNaN(bId)) return 1;
+      
+      // If neither has ID, sort by createdAt (newest first)
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
     
     renderCards();
   } catch (error) {
@@ -392,11 +399,15 @@ function createCardHTML(card) {
   const isCompleted = completedCards.includes(card.id);
   const difficultyClass = card.difficulty === 'سهل' ? 'easy' : 
                           card.difficulty === 'متوسط' ? 'medium' : 'hard';
+  const cardIdDisplay = card.cardId !== undefined && card.cardId !== null ? `#${card.cardId}` : '';
   
   return `
     <div class="card ${isCompleted ? 'completed' : ''}" id="card-${card.id}">
       <div class="card-header">
-        <h3 class="card-title">${card.title || 'بدون عنوان'}</h3>
+        <h3 class="card-title">
+          ${cardIdDisplay ? `<span style="color: var(--text-secondary); font-size: 0.8em; margin-left: 8px;">${cardIdDisplay}</span>` : ''}
+          ${card.title || 'بدون عنوان'}
+        </h3>
         <div class="card-actions">
           <button class="complete-btn ${isCompleted ? 'completed' : ''}" title="تم">
             ${isCompleted ? '✓' : '○'}
@@ -443,6 +454,7 @@ async function toggleCardComplete(cardId) {
 // Admin Functions
 function openAdminModal(card = null) {
   if (card) {
+    document.getElementById('cardId').value = card.cardId || '';
     document.getElementById('cardTitle').value = card.title || '';
     document.getElementById('cardDescription').value = card.description || '';
     document.getElementById('cardCategory').value = card.category || '';
@@ -452,8 +464,30 @@ function openAdminModal(card = null) {
   } else {
     adminForm.reset();
     document.getElementById('editingCardId').value = '';
+    // Set default cardId for new cards (next available ID)
+    getNextCardId().then(nextId => {
+      document.getElementById('cardId').value = nextId;
+    });
   }
   adminModal.classList.add('active');
+}
+
+// Get next available card ID
+async function getNextCardId() {
+  try {
+    const snapshot = await db.collection('cards').get();
+    const existingIds = snapshot.docs
+      .map(doc => doc.data().cardId)
+      .filter(id => id !== undefined && id !== null)
+      .map(id => typeof id === 'number' ? id : parseInt(id))
+      .filter(id => !isNaN(id));
+    
+    if (existingIds.length === 0) return 1;
+    return Math.max(...existingIds) + 1;
+  } catch (error) {
+    console.error('Error getting next card ID:', error);
+    return 1;
+  }
 }
 
 async function handleAdminSubmit(e) {
@@ -481,7 +515,15 @@ async function handleAdminSubmit(e) {
   }
 
   const cardId = document.getElementById('editingCardId').value;
+  const cardIdValue = parseInt(document.getElementById('cardId').value);
+  
+  if (isNaN(cardIdValue) || cardIdValue < 0) {
+    alert('الرجاء إدخال معرف صحيح (رقم أكبر من أو يساوي 0)');
+    return;
+  }
+  
   const cardData = {
+    cardId: cardIdValue,
     title: document.getElementById('cardTitle').value.trim(),
     description: document.getElementById('cardDescription').value.trim(),
     category: document.getElementById('cardCategory').value.trim(),

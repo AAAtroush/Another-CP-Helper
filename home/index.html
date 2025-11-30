@@ -82,6 +82,11 @@
       <h2>تعديل المحتوى</h2>
       <form id="adminForm">
         <div class="form-group">
+          <label for="cardId">معرف البطاقة (ID):</label>
+          <input type="number" id="cardId" placeholder="مثال: 1, 2, 3..." min="0" required>
+          <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 4px;">يستخدم لترتيب البطاقات (رقم أصغر = يظهر أولاً)</small>
+        </div>
+        <div class="form-group">
           <label for="cardTitle">عنوان البطاقة:</label>
           <input type="text" id="cardTitle" required>
         </div>

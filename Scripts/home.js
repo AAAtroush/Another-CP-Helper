@@ -37,6 +37,7 @@ let currentUser = null;
 let isAdmin = false;
 let cards = [];
 let completedCards = [];
+let isLoadingCards = false;
 
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -70,22 +71,30 @@ const ADMIN_EMAILS = _ae;
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   checkAuthState();
-  loadCompletedCards();
   
+  // Handle edit card URL parameter
   const urlParams = new URLSearchParams(window.location.search);
   const editCardId = urlParams.get('edit');
   if (editCardId) {
-  
+    // Wait for auth state to be ready, then check if we can edit
     auth.onAuthStateChanged(async (user) => {
-      if (user && ADMIN_EMAILS.includes(user.email)) {
-        await loadCards();
-        const cardToEdit = cards.find(c => c.id === editCardId);
-        if (cardToEdit) {
-          setTimeout(() => {
-            openAdminModal(cardToEdit);
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }, 500);
+      try {
+        if (user && ADMIN_EMAILS.includes(user.email)) {
+          // Ensure cards are loaded
+          if (cards.length === 0) {
+            await loadCards();
+          }
+          const cardToEdit = cards.find(c => c.id === editCardId);
+          if (cardToEdit) {
+            // Use requestAnimationFrame for smoother UI update
+            requestAnimationFrame(() => {
+              openAdminModal(cardToEdit);
+              window.history.replaceState({}, document.title, window.location.pathname);
+            });
+          }
         }
+      } catch (error) {
+        console.error('Error loading card for edit:', error);
       }
     });
   }
@@ -156,21 +165,63 @@ function setAuthMode(mode) {
   loginForm.reset();
 }
 
+let authStateUnsubscribe = null;
+
 function checkAuthState() {
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      currentUser = user;
-      isAdmin = ADMIN_EMAILS.includes(user.email);
-      updateUIForLoggedIn(user);
-      await loadCompletedCards();
-      await loadCards();
-    } else {
-      currentUser = null;
-      isAdmin = false;
-      updateUIForLoggedOut();
-      cards = [];
-      completedCards = [];
-      renderCards();
+  // Show loading spinner initially
+  if (cardsContainer) {
+    cardsContainer.innerHTML = `
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>جاري التحميل...</p>
+      </div>
+    `;
+  }
+  
+  // Unsubscribe from previous listener if it exists
+  if (authStateUnsubscribe) {
+    authStateUnsubscribe();
+  }
+  
+  // Set up auth state listener
+  authStateUnsubscribe = auth.onAuthStateChanged(async (user) => {
+    try {
+      // Show loading spinner when auth state changes
+      if (cardsContainer && !isLoadingCards) {
+        cardsContainer.innerHTML = `
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+          </div>
+        `;
+      }
+      
+      if (user) {
+        currentUser = user;
+        isAdmin = ADMIN_EMAILS.includes(user.email);
+        updateUIForLoggedIn(user);
+        // Load completed cards first, then cards - wait for both to complete
+        await loadCompletedCards();
+        await loadCards();
+      } else {
+        currentUser = null;
+        isAdmin = false;
+        updateUIForLoggedOut();
+        cards = [];
+        completedCards = [];
+        isLoadingCards = false; // Reset loading state
+        renderCards();
+      }
+    } catch (error) {
+      console.error('Error in auth state change handler:', error);
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="text-align: center; color: var(--danger); grid-column: 1/-1; padding: 20px;">
+            <p>حدث خطأ أثناء تحميل البيانات</p>
+            <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">إعادة التحميل</button>
+          </div>
+        `;
+      }
     }
   });
 }
@@ -194,10 +245,8 @@ async function handleAuthSubmit(e) {
     loginModal.classList.remove('active');
     loginForm.reset();
     
-    setTimeout(async () => {
-      await loadCompletedCards();
-      await loadCards();
-    }, 100);
+    // Auth state change handler will automatically load the data
+    // No need for setTimeout - the onAuthStateChanged will fire and load data
   } catch (error) {
     errorMsg.textContent = getErrorMessage(error.code);
     errorMsg.classList.add('show');
@@ -252,9 +301,31 @@ function updateUIForLoggedOut() {
 
 // Cards Management
 async function loadCards() {
+  // Prevent multiple simultaneous loads
+  if (isLoadingCards) {
+    return;
+  }
+  
+  isLoadingCards = true;
+  
+  // Show loading spinner
+  if (cardsContainer) {
+    cardsContainer.innerHTML = `
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>جاري تحميل البطاقات...</p>
+      </div>
+    `;
+  }
+  
   try {
-    // Load all cards
-    const snapshot = await db.collection('cards').get();
+    // Load all cards with timeout protection
+    const snapshot = await Promise.race([
+      db.collection('cards').get(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      )
+    ]);
     
     cards = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -278,12 +349,25 @@ async function loadCards() {
       return bTime - aTime;
     });
     
+    isLoadingCards = false;
     renderCards();
   } catch (error) {
     console.error('Error loading cards:', error);
+    isLoadingCards = false;
 
     if (error.code === 'permission-denied') {
-      cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
+      if (cardsContainer) {
+        cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
+      }
+    } else if (error.message === 'Request timeout') {
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="text-align: center; color: var(--danger); grid-column: 1/-1; padding: 20px;">
+            <p>انتهت مهلة الاتصال. يرجى التحقق من اتصالك بالإنترنت.</p>
+            <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">إعادة المحاولة</button>
+          </div>
+        `;
+      }
     } else {
       cards = [];
       renderCards();
@@ -310,6 +394,15 @@ async function loadCompletedCards() {
 }
 
 function renderCards() {
+  // Don't render if we're still loading
+  if (isLoadingCards) {
+    return;
+  }
+  
+  if (!cardsContainer) {
+    return;
+  }
+  
   const authUser = auth.currentUser;
   if (!currentUser && !authUser) {
     cardsContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">سجل الدخول لعرض البطاقات</p>';
@@ -321,7 +414,8 @@ function renderCards() {
     isAdmin = ADMIN_EMAILS.includes(authUser.email);
   }
 
-  if (cards.length === 0) {
+  // Only show "no cards" message if we're sure loading is complete and cards array is empty
+  if (cards.length === 0 && !isLoadingCards) {
     let message = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">لا توجد بطاقات متاحة</p>';
     if (isAdmin) {
       message += '<p style="text-align: center; color: var(--primary); margin-top: 12px; font-weight: 600;">أنت مسؤول - اضغط على زر "إضافة بطاقة جديدة" أدناه لإنشاء أول بطاقة</p>';

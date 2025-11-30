@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مصورات الخوارزميات - CP Helper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Styles/home.css">
+  <link rel="stylesheet" href="../Styles/navbar.css">
+  <link rel="stylesheet" href="../Styles/style.css">
+</head>
+
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="nav-logo">🎯</span>
+        <span class="nav-title">مساعد البرمجة التنافسية</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="../home/" class="nav-link">الرئيسية</a></li>
+        <li><a href="../grid/" class="nav-link">عرض الشبكة</a></li>
+        <li><a href="./" class="nav-link active">عرض الخوارزميات</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="header-content">
+      <h1>🔍 عرض الخوارزميات</h1>
+      <p class="header-subtitle">تصور تفاعلي للخوارزميات الأساسية في البرمجة التنافسية</p>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <section class="container">
+    
+    <!-- WELCOME SECTION -->
+    <div class="welcome-section">
+      <h2>اختر عرض الخوارزمية</h2>
+      <p>استكشف كيف تعمل الخوارزميات الأساسية من خلال التصور التفاعلي</p>
+    </div>
+
+    <!-- VISUALIZERS GRID -->
+    <div class="cards-container">
+      <div class="card" onclick="window.location.href='./bfs/'">
+        <div class="card-header">
+          <h3 class="card-title">BFS - البحث في العرض أولاً</h3>
+        </div>
+        <p class="card-description">
+          تصور تفاعلي لخوارزمية البحث في العرض أولاً (Breadth-First Search) على الرسوم البيانية. 
+          شاهد كيف يتم استكشاف العقد طبقة بطبقة.
+        </p>
+        <div class="card-footer">
+          <span class="card-category">خوارزمية</span>
+          <span class="card-difficulty medium">متوسط</span>
+        </div>
+      </div>
+
+      <div class="card" onclick="window.location.href='./dfs/'">
+        <div class="card-header">
+          <h3 class="card-title">DFS - البحث في العمق أولاً</h3>
+        </div>
+        <p class="card-description">
+          تصور تفاعلي لخوارزمية البحث في العمق أولاً (Depth-First Search) على الرسوم البيانية. 
+          شاهد كيف يتم استكشاف المسارات بعمق قبل الانتقال للعقد الأخرى.
+        </p>
+        <div class="card-footer">
+          <span class="card-category">خوارزمية</span>
+          <span class="card-difficulty medium">متوسط</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <script src="../Scripts/navbar.js"></script>
+
+</body>
+
+</html>
+

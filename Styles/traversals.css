@@ -252,3 +252,68 @@ input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
+
+/* Stack and Queue specific styles */
+.stack-info,
+.queue-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.stack-info div,
+.queue-info div {
+  margin: 8px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.stack-info strong,
+.queue-info strong {
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.operation-history {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.operation-history strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+#historyItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-item {
+  padding: 6px 12px;
+  background: var(--bg-main);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Canvas styles for stack and queue */
+#stackCanvas,
+#queueCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: default;
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مصور DSU - CP Helper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../Styles/home.css">
+  <link rel="stylesheet" href="../../Styles/navbar.css">
+  <link rel="stylesheet" href="../../Styles/style.css">
+  <link rel="stylesheet" href="../../Styles/traversals.css">
+</head>
+
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="nav-logo">🎯</span>
+        <span class="nav-title">مساعد البرمجة التنافسية</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="../../home/" class="nav-link">الرئيسية</a></li>
+        <li><a href="../../grid/" class="nav-link">عرض الشبكة</a></li>
+        <li><a href="../" class="nav-link">عرض الخوارزميات</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="header-content">
+      <h1>🔗 عرض DSU - Disjoint Set Union</h1>
+      <p class="header-subtitle">تصور تفاعلي لبنية بيانات Union-Find</p>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <section class="container">
+    
+    <div class="visualizer-container">
+      <div class="controls-panel">
+        <div class="control-group">
+          <label>عدد العناصر</label>
+          <input type="number" id="numElements" min="2" max="20" value="8">
+        </div>
+        <div class="control-group">
+          <label>Union (من - إلى)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="number" id="unionFrom" placeholder="من" min="0" style="flex: 1;">
+            <input type="number" id="unionTo" placeholder="إلى" min="0" style="flex: 1;">
+          </div>
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn" onclick="performUnion()" id="unionBtn">🔗 Union</button>
+        </div>
+        <div class="control-group">
+          <label>Find (عنصر)</label>
+          <input type="number" id="findElement" placeholder="عنصر" min="0">
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn" onclick="performFind()" id="findBtn">🔍 Find</button>
+        </div>
+        <div class="control-group">
+          <label>السرعة</label>
+          <input type="number" id="speed" min="100" max="2000" value="500" step="100">
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn secondary" onclick="resetDSU()">🔄 إعادة تعيين</button>
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn danger" onclick="clearDSU()">🗑️ مسح الكل</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="dsuCanvas"></canvas>
+      </div>
+
+      <div class="info-panel">
+        <h3>معلومات DSU</h3>
+        <div class="status-text" id="statusText">جاهز للبدء. أدخل عدد العناصر واضغط إعادة تعيين.</div>
+        <div id="parentDisplay" class="path-display" style="display: none;">
+          <strong>مصفوفة Parent:</strong>
+          <div id="parentItems" class="path-items"></div>
+        </div>
+        <div id="rankDisplay" class="path-display" style="display: none;">
+          <strong>مصفوفة Rank:</strong>
+          <div id="rankItems" class="path-items"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <script src="../../Scripts/navbar.js"></script>
+  <script src="../../Scripts/dsu.js"></script>
+
+</body>
+
+</html>
+

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مصور Bubble Sort - CP Helper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../Styles/home.css">
+  <link rel="stylesheet" href="../../Styles/navbar.css">
+  <link rel="stylesheet" href="../../Styles/style.css">
+  <link rel="stylesheet" href="../../Styles/traversals.css">
+</head>
+
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="nav-logo">🎯</span>
+        <span class="nav-title">مساعد البرمجة التنافسية</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="../../home/" class="nav-link">الرئيسية</a></li>
+        <li><a href="../../grid/" class="nav-link">عرض الشبكة</a></li>
+        <li><a href="../" class="nav-link">عرض الخوارزميات</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="header-content">
+      <h1>🫧 عرض Bubble Sort - فرز الفقاعات</h1>
+      <p class="header-subtitle">تصور تفاعلي لخوارزمية Bubble Sort</p>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <section class="container">
+    
+    <div class="visualizer-container">
+      <div class="controls-panel">
+        <div class="control-group">
+          <label>المصفوفة</label>
+          <textarea dir="ltr" id="arrayInput" class="cf-input" rows="3"
+              placeholder="أدخل الأرقام مفصولة بمسافات: 64 34 25 12 22 11 90"></textarea>
+        </div>
+        <div class="control-group">
+          <label>السرعة</label>
+          <input type="number" id="speed" min="100" max="2000" value="500" step="100">
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn" onclick="startBubbleSort()" id="startBtn">▶️ بدء الفرز</button>
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn secondary" onclick="resetArray()">🔄 إعادة تعيين</button>
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+          <button class="control-btn" onclick="generateRandom()">🎲 أرقام عشوائية</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="sortCanvas"></canvas>
+      </div>
+
+      <div class="info-panel">
+        <h3>معلومات Bubble Sort</h3>
+        <div class="status-text" id="statusText">جاهز للبدء. أدخل المصفوفة واضغط بدء الفرز.</div>
+        <div id="comparisonsDisplay" class="path-display" style="display: none;">
+          <strong>عدد المقارنات:</strong>
+          <span id="comparisonsCount">0</span>
+        </div>
+        <div id="swapsDisplay" class="path-display" style="display: none;">
+          <strong>عدد التبديلات:</strong>
+          <span id="swapsCount">0</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <script src="../../Scripts/navbar.js"></script>
+  <script src="../../Scripts/bubble-sort.js"></script>
+
+</body>
+
+</html>
+

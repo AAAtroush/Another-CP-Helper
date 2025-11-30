@@ -32,8 +32,7 @@ function initDefaultGraph() {
     edges = [
         ['A', 'B'], ['A', 'C'],
         ['B', 'D'], ['B', 'E'],
-        ['C', 'F'],
-        ['D', 'E']
+        ['C', 'F']
     ];
     
     // Calculate positions in a tree-like structure
@@ -54,7 +53,6 @@ function initDefaultGraph() {
 
 initDefaultGraph();
 
-// Set interaction mode
 function setMode(newMode, button) {
     if (isRunning) return;
     
@@ -136,14 +134,12 @@ canvas.addEventListener('click', (e) => {
                 return;
             }
             
-            // If clicked same node → cancel
             if (selectedNode === clickedNode) {
                 selectedNode = null;
                 updateStatus('تم إلغاء الاختيار');
                 return;
             }
             
-            // Add edge
             const edge = [selectedNode, clickedNode].sort();
             const key = edge.join('-');
             
@@ -154,10 +150,8 @@ canvas.addEventListener('click', (e) => {
                 updateStatus('الحافة موجودة بالفعل!');
             }
             
-            // Clean up
             selectedNode = null;
             
-            // Return to normal mode after adding one edge
             mode = 'normal';
             canvas.style.cursor = 'default';
             canvas.classList.remove('crosshair-cursor');
@@ -200,7 +194,6 @@ canvas.addEventListener('mouseup', () => {
     isDragging = false;
     dragNode = null;
     
-    // After release → prevent click
     setTimeout(() => (didDrag = false), 0);
 });
 
@@ -222,7 +215,6 @@ function getNodeAt(x, y) {
 function drawGraph(highlighted = {}, visited = new Set(), path = []) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw edges
     edges.forEach(([from, to]) => {
         const fromPos = nodePositions[from];
         const toPos = nodePositions[to];
@@ -230,7 +222,6 @@ function drawGraph(highlighted = {}, visited = new Set(), path = []) {
         let color = '#e2e8f0';
         let width = 2;
         
-        // Highlight path edges
         if (path.length > 1) {
             for (let i = 0; i < path.length - 1; i++) {
                 if ((path[i] === from && path[i + 1] === to) ||
@@ -304,7 +295,6 @@ function drawGraph(highlighted = {}, visited = new Set(), path = []) {
     }
 }
 
-// DFS Algorithm (recursive)
 async function startDFS() {
     if (isRunning) return;
     
@@ -327,7 +317,7 @@ async function startDFS() {
     
     const visited = new Set();
     const parent = {};
-    const explorationOrder = []; // Track complete exploration order
+    const explorationOrder = [];
     let found = false;
     let path = [];
     
@@ -336,43 +326,35 @@ async function startDFS() {
     updateStatus(`بدء DFS من العقدة ${startNode}${targetNode ? ` للبحث عن ${targetNode}` : ' (استكشاف كامل)'}...`);
     updateStack([]);
     
-    // Recursive DFS function
     async function dfsRecursive(current) {
-        // Mark as visited
         visited.add(current);
         explorationOrder.push(current);
         
-        // Highlight current node
         path = getPath(parent, current);
         drawGraph({ current }, visited, path);
         updateStatus(`جارٍ استكشاف العقدة ${current}...`);
         updatePath(path);
         await sleep(animationSpeed);
         
-        // Check if target found - RETURN IMMEDIATELY
         if (targetNode && current === targetNode) {
             found = true;
             path = getPath(parent, current);
             updateStatus(`تم العثور على الهدف ${targetNode}!`);
             updatePath(path);
             drawGraph({ current }, visited, path);
-            return true; // Stop immediately when target is found
+            return true;
         }
         
-        // Get neighbors
         const neighbors = edges
             .filter(([from, to]) => from === current || to === current)
             .map(([from, to]) => from === current ? to : from)
             .filter(neighbor => !visited.has(neighbor));
         
-        // Recursively visit each neighbor
         for (const neighbor of neighbors) {
-            if (found) return true; // Break if target already found
+            if (found) return true; 
             
-            // Set parent
             parent[neighbor] = current;
             
-            // Highlight edge being explored
             path = getPath(parent, current);
             drawGraph({ 
                 current, 
@@ -380,36 +362,30 @@ async function startDFS() {
             }, visited, path);
             await sleep(animationSpeed / 2);
             
-            // Recursive call
             const result = await dfsRecursive(neighbor);
-            if (result) return true; // Target found, propagate up
+            if (result) return true; 
         }
         
-        return false; // Target not found in this branch
+        return false;
     }
     
-    // Start recursive DFS
     await dfsRecursive(startNode);
     
     if (!found && targetNode) {
         updateStatus(`لم يتم العثور على العقدة ${targetNode}`);
         updatePath([]);
     } else if (!targetNode) {
-        // Show complete exploration path
         updateStatus(`اكتمل استكشاف الرسم البياني. تمت زيارة ${visited.size} عقدة بالترتيب التالي:`);
         updatePath(explorationOrder);
     }
     
-    // Final draw
     drawGraph({}, visited, path);
     updateStack([]);
-    // Keep path visible - don't clear it
     
     isRunning = false;
     document.getElementById('startBtn').disabled = false;
 }
 
-// Get path from start to node
 function getPath(parent, node) {
     const path = [];
     let current = node;
@@ -420,7 +396,6 @@ function getPath(parent, node) {
     return path;
 }
 
-// Utility functions
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -499,14 +474,13 @@ function loadEdgesFromInput() {
         const u = parts[0];
         const v = parts[1];
 
-        // إنشاء nodes إن لم تكن موجودة
         if (!nodes.includes(u)) nodes.push(u);
         if (!nodes.includes(v)) nodes.push(v);
 
         edges.push([u, v]);
     }
 
-    autoLayoutNodes(); // توزيع تلقائي
+    autoLayoutNodes(); 
     drawGraph();
     updateStatus('تم تحميل الرسم من الإدخال');
 }
@@ -526,6 +500,5 @@ function autoLayoutNodes() {
     });
 }
 
-// Initial draw
 drawGraph();
 

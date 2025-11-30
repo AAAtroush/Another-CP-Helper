@@ -32,7 +32,7 @@ const rotateCCWBtn = document.getElementById("rotateCCW");
 
 let showIndices = false;
 let oneBased = false;
-let inputsDisabled = false; // false = writing mode, true = coloring mode
+let inputsDisabled = false;
 
 let painting = false;
 let erasing = false;
@@ -87,12 +87,10 @@ function saveHistory() {
   const last = history[historyIndex];
   if (last && stateToKey(last) === key) return;
 
-  // truncate future
   history = history.slice(0, historyIndex + 1);
   history.push(snap);
   historyIndex = history.length - 1;
 
-  // enforce max size
   if (history.length > MAX_HISTORY) {
     history.shift();
     historyIndex = history.length - 1;
@@ -124,7 +122,6 @@ function loadHistoryState(index = historyIndex) {
 
   isInitializing = false;
 
-  // Set historyIndex and update UI buttons
   historyIndex = index;
   updateIndices();
   updateUndoRedoButtons();
@@ -173,7 +170,6 @@ function buildGrid(save = true) {
   const rows = +rowsInput.value || 1;
   const cols = +colsInput.value || 1;
 
-  // preserve old cells by coordinates
   const old = Array.from(grid.children).map((cell) => ({
     row: +cell.dataset.row,
     col: +cell.dataset.col,
@@ -199,9 +195,8 @@ function buildGrid(save = true) {
         cell.style.backgroundColor = match.color || "white";
       }
 
-      // events: click paint, contextmenu erase (only in coloring mode)
       cell.addEventListener("mousedown", (e) => {
-        if (!inputsDisabled) return; // Only allow painting in coloring mode
+        if (!inputsDisabled) return;
         if (e.button === 0) {
           cell.style.backgroundColor = colorPicker.value;
           saveHistory();
@@ -213,12 +208,12 @@ function buildGrid(save = true) {
 
       cell.addEventListener("contextmenu", (e) => {
         if (inputsDisabled) {
-          e.preventDefault(); // Only prevent context menu in coloring mode
+          e.preventDefault();
         }
       });
 
       cell.addEventListener("mouseover", () => {
-        if (!inputsDisabled) return; // Only allow painting in coloring mode
+        if (!inputsDisabled) return;
         if (painting) {
           cell.style.backgroundColor = colorPicker.value;
         } else if (erasing) {
@@ -308,7 +303,6 @@ async function exportCF() {
     await navigator.clipboard.writeText(out);
     alert("تم نسخ شبكة CF إلى الحافظة!");
   } catch (err) {
-    // fallback
     const ta = document.createElement("textarea");
     ta.value = out;
     document.body.appendChild(ta);
@@ -351,7 +345,6 @@ function fillBinary() {
 }
 
 function generateRandomGrid() {
-  // random values 0..99; keep current dims
   const rows = +rowsInput.value || 1;
   const cols = +colsInput.value || 1;
   buildGrid();
@@ -429,19 +422,16 @@ function toggleInputs() {
     .querySelectorAll(".cell input")
     .forEach((inp) => {
       inp.disabled = inputsDisabled;
-      // Make input non-interactive for pointer events so clicks pass through to cell for painting
       if (inputsDisabled) {
         inp.style.pointerEvents = "none";
       } else {
         inp.style.pointerEvents = "auto";
       }
     });
-  // Update button text to reflect current mode
   toggleInputsBtn.textContent = inputsDisabled
     ? "🎨 وضع التلوين"
     : "🖊️ وضع الكتابة";
   
-  // Stop any ongoing painting/erasing when switching modes
   painting = false;
   erasing = false;
 }
@@ -449,7 +439,6 @@ function toggleInputs() {
 function rotateGrid(clockwise = true) {
   const rows = +rowsInput.value || 1;
   const cols = +colsInput.value || 1;
-  // read grid
   const matrix = [];
   for (let r = 0; r < rows; r++) {
     const rowArr = [];
@@ -491,9 +480,7 @@ function rotateGrid(clockwise = true) {
 }
 
 document.addEventListener("mousedown", (e) => {
-  // Only allow painting/erasing in coloring mode
   if (!inputsDisabled) return;
-  // left button = paint, right button = erase
   if (e.button === 0) painting = true;
   if (e.button === 2) erasing = true;
 });
@@ -503,7 +490,6 @@ document.addEventListener("mouseup", (e) => {
   erasing = false;
 });
 grid.addEventListener("contextmenu", (e) => {
-  // Only prevent context menu in coloring mode
   if (inputsDisabled) {
     e.preventDefault();
   }
@@ -543,12 +529,10 @@ buildGrid();
 updateCellSize();
 updateIndices();
 updateUndoRedoButtons();
-// Initialize button text
 if (toggleInputsBtn) {
   toggleInputsBtn.textContent = inputsDisabled ? "🎨 وضع التلوين" : "🖊️ وضع الكتابة";
 }
 
-// Formulas tabs
 document.querySelectorAll(".formulas-tab-btn").forEach((tab) => {
   tab.addEventListener("click", () => {
     document

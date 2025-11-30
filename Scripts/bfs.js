@@ -1,7 +1,3 @@
-// ========================================================
-// GLOBAL STATE (must be at the top to avoid TDZ errors)
-// ========================================================
-
 // Graph data structure
 let nodes = [];
 let edges = [];
@@ -27,15 +23,13 @@ function resizeCanvas() {
   const container = canvas.parentElement;
   canvas.width = container.clientWidth;
   canvas.height = container.clientHeight;
-  drawGraph(); // <-- safe now because variables are defined above
+  drawGraph();
 }
 
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-// ========================================================
-// INITIAL DEFAULT GRAPH
-// ========================================================
+
 
 function initDefaultGraph() {
   nodes = ["A", "B", "C", "D", "E", "F"];
@@ -129,7 +123,6 @@ canvas.addEventListener("click", (e) => {
       }
     }
 
-    // 🔥 ارجع للوضع العادي بعد إضافة عقدة واحدة
     mode = "normal";
     canvas.style.cursor = "default";
     canvas.classList.remove("crosshair-cursor");
@@ -140,31 +133,22 @@ canvas.addEventListener("click", (e) => {
     return;
   }
 
-  // -------------------
-  // ADD EDGE MODE
-  // -------------------
-// -------------------
-// ADD EDGE MODE
-// -------------------
 if (mode === "addEdge") {
     const clickedNode = getNodeAt(x, y);
 
     if (clickedNode) {
-        // أول نود يختارها
         if (!selectedNode) {
             selectedNode = clickedNode;
             updateStatus(`اختر العقدة الثانية للاتصال بـ ${selectedNode}`);
             return;
         }
 
-        // لو اختار نفس النود → cancel
         if (selectedNode === clickedNode) {
             selectedNode = null;
             updateStatus("تم إلغاء الاختيار");
             return;
         }
 
-        // إضافة الحافة
         const edge = [selectedNode, clickedNode].sort();
         const key = edge.join("-");
 
@@ -175,10 +159,8 @@ if (mode === "addEdge") {
             updateStatus("الحافة موجودة بالفعل!");
         }
 
-        // 🔥 تنظيف
         selectedNode = null;
 
-        // 🔥 ارجاع الوضع الطبيعي بعد إضافة حافة واحدة
         mode = "normal";
         canvas.style.cursor = "default";
         canvas.classList.remove("crosshair-cursor");
@@ -224,13 +206,9 @@ canvas.addEventListener("mouseup", () => {
   isDragging = false;
   dragNode = null;
 
-  // بعد الإفلات → منع click
   setTimeout(() => (didDrag = false), 0);
 });
 
-// ========================================================
-// HELPER — Detect node under cursor
-// ========================================================
 
 function getNodeAt(x, y) {
   const r = 25;
@@ -245,14 +223,10 @@ function getNodeAt(x, y) {
   return null;
 }
 
-// ========================================================
-// DRAW GRAPH
-// ========================================================
 
 function drawGraph(highlighted = {}, queue = [], visited = new Set(), path = [], levelColors = {}) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw edges
   edges.forEach(([from, to]) => {
     const p1 = nodePositions[from];
     const p2 = nodePositions[to];
@@ -260,7 +234,6 @@ function drawGraph(highlighted = {}, queue = [], visited = new Set(), path = [],
     let color = "#e2e8f0";
     let width = 2;
 
-    // Highlight path edges
     if (path.length > 1) {
       for (let i = 0; i < path.length - 1; i++) {
         if ((path[i] === from && path[i + 1] === to) ||
@@ -302,7 +275,6 @@ function drawGraph(highlighted = {}, queue = [], visited = new Set(), path = [],
       border = "#4f46e5";
       borderWidth = 4;
     } else if (levelColors[node]) {
-      // Use level-based color
       fill = levelColors[node];
       border = levelColors[node];
     } else if (visited.has(node)) {
@@ -313,7 +285,6 @@ function drawGraph(highlighted = {}, queue = [], visited = new Set(), path = [],
       border = "#d97706";
     }
 
-    // Node circle
     ctx.fillStyle = fill;
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, 25, 0, 2 * Math.PI);
@@ -323,7 +294,6 @@ function drawGraph(highlighted = {}, queue = [], visited = new Set(), path = [],
     ctx.lineWidth = borderWidth;
     ctx.stroke();
 
-    // Label
     ctx.fillStyle =
       visited.has(node) || highlighted.current === node || levelColors[node] ? "#ffffff" : "#1e293b";
     ctx.font = "bold 16px Arial";
@@ -332,7 +302,6 @@ function drawGraph(highlighted = {}, queue = [], visited = new Set(), path = [],
     ctx.fillText(node, pos.x, pos.y);
   });
 
-  // Highlight selected node (addEdge mode)
   if (selectedNode && mode === "addEdge") {
     const pos = nodePositions[selectedNode];
     ctx.strokeStyle = "#f59e0b";
@@ -374,19 +343,18 @@ async function startBFS() {
   const visited = new Set([startNode]);
   const parent = { [startNode]: null };
   const levelColors = {};
-  const explorationOrder = [startNode]; // Track complete exploration order
+  const explorationOrder = [startNode];
   const levelColorPalette = [
-    "#6366f1", // Level 0 - indigo
-    "#8b5cf6", // Level 1 - purple
-    "#ec4899", // Level 2 - pink
-    "#f59e0b", // Level 3 - amber
-    "#10b981", // Level 4 - emerald
-    "#06b6d4", // Level 5 - cyan
-    "#f97316", // Level 6 - orange
-    "#84cc16", // Level 7 - lime
+    "#6366f1",
+    "#8b5cf6",
+    "#ec4899",
+    "#f59e0b", 
+    "#10b981",
+    "#06b6d4",
+    "#f97316",
+    "#84cc16",
   ];
 
-  // Assign color to start node (level 0)
   levelColors[startNode] = levelColorPalette[0];
 
   updateStatus(`بدء BFS من العقدة ${startNode}${targetNode ? ` للبحث عن ${targetNode}` : ' (استكشاف كامل)'}...`);
@@ -404,14 +372,13 @@ async function startBFS() {
     updatePath(path);
     await sleep(animationSpeed);
 
-    // Check if target found - BREAK IMMEDIATELY (before processing neighbors)
     if (targetNode && current === targetNode) {
       found = true;
       path = getPath(parent, current);
       updateStatus(`تم العثور على الهدف ${targetNode}!`);
       updatePath(path);
       drawGraph({ current }, queue.map(q => q.node), visited, path, levelColors);
-      break; // Stop immediately when target is found - don't process neighbors
+      break;
     }
 
     const neighbors = edges
@@ -427,7 +394,6 @@ async function startBFS() {
       queue.push({ node: nb, level: nextLevel });
       explorationOrder.push(nb);
 
-      // Assign color based on level
       const colorIndex = nextLevel % levelColorPalette.length;
       levelColors[nb] = levelColorPalette[colorIndex];
 
@@ -447,14 +413,12 @@ async function startBFS() {
     updateStatus(`لم يتم العثور على العقدة ${targetNode}`);
     updatePath([]);
   } else if (!targetNode) {
-    // Show complete exploration path
     updateStatus(`اكتمل استكشاف الرسم البياني. تمت زيارة ${visited.size} عقدة بالترتيب التالي:`);
     updatePath(explorationOrder);
   }
 
   drawGraph({}, [], visited, path, levelColors);
   updateQueue([]);
-  // Keep path visible - don't clear it
 
   isRunning = false;
   document.getElementById("startBtn").disabled = false;
@@ -558,14 +522,13 @@ function loadEdgesFromInput() {
     const u = parts[0];
     const v = parts[1];
 
-    // إنشاء nodes إن لم تكن موجودة
     if (!nodes.includes(u)) nodes.push(u);
     if (!nodes.includes(v)) nodes.push(v);
 
     edges.push([u, v]);
   }
 
-  autoLayoutNodes(); // توزيع تلقائي
+  autoLayoutNodes();
   drawGraph();
   updateStatus("تم تحميل الرسم من الإدخال");
 }

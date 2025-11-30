@@ -1,13 +1,10 @@
 // ====== NAVIGATION BAR FUNCTIONALITY ======
 
-// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Navigation bar smooth scrolling and active state
   document.querySelectorAll(".nav-link").forEach((link) => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
       
-      // If it's an internal link (starts with #), handle smooth scroll
       if (href && href.startsWith("#")) {
         e.preventDefault();
         const targetElement = document.querySelector(href);
@@ -20,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // Update active state for section links
       if (href && href.startsWith("#")) {
         document.querySelectorAll(".nav-link").forEach(l => {
           if (l.getAttribute("href") && l.getAttribute("href").startsWith("#")) {
@@ -31,12 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Set active state based on current page
     const currentPath = window.location.pathname;
     const linkPath = link.getAttribute("href");
     
     if (linkPath && !linkPath.startsWith("#")) {
-      // Handle different path formats
       const normalizedCurrentPath = currentPath.replace(/\/$/, '') || '/';
       const normalizedLinkPath = linkPath.replace(/^\.\//, '');
       
@@ -50,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // Update active state on scroll for section links
   const sectionLinks = document.querySelectorAll('.nav-link[href^="#"]');
   if (sectionLinks.length > 0) {
     const sections = Array.from(sectionLinks).map(link => {
@@ -66,28 +59,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const scrollPosition = window.scrollY + 100;
         let activeSectionFound = false;
         
-        // First, remove active from all section links
         sectionLinks.forEach(l => l.classList.remove("active"));
         
-        // Check each section to see if it's in view
         sections.forEach(({ link, element }) => {
           if (element) {
             const offsetTop = element.offsetTop;
             const offsetBottom = offsetTop + element.offsetHeight;
             
-            // Check if the scroll position is within the section bounds
             if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
               link.classList.add("active");
               activeSectionFound = true;
             }
           }
         });
-        
-        // If no section is in view, all section links remain inactive
-        // (already removed above, so nothing to do)
       };
       
-      // Throttle scroll events for better performance
       let ticking = false;
       window.addEventListener('scroll', () => {
         if (!ticking) {
@@ -99,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
-      // Initial check
       handleScroll();
     }
   }

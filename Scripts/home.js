@@ -1,4 +1,3 @@
-// Obfuscation helper function
 function _d(s, k) {
     try {
         const b = atob(s);
@@ -12,7 +11,6 @@ function _d(s, k) {
     }
 }
 
-// Obfuscated Firebase Configuration
 const _fc = {
     a: _d('KngRUDhIL2lSUAVDHHsYBwdEKQkjQSdSWkAEZR1bPUtaaz0AKFgi', 'k1'),
     b: _d('ClwERgNXGR8IQkZaDl4bVxkcDVsZVwlTGFcKQhscCF0G', 'k2'),
@@ -31,18 +29,15 @@ const firebaseConfig = {
     appId: _fc.f
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Global state
 let currentUser = null;
 let isAdmin = false;
 let cards = [];
 let completedCards = [];
 
-// DOM Elements
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const loginSection = document.getElementById('loginSection');
@@ -66,14 +61,12 @@ const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirmPassword');
 const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
 
-// Obfuscated Admin emails
 const _ae = [
     _d('AAhZBAhVBApVIQJcAAxdTwZeDA==', 'ae1'),
     _d('DApfBAscABFADhBBCVMCVCVVDARbDUtRDgg=', 'ae2')
 ];
 const ADMIN_EMAILS = _ae; 
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   checkAuthState();
@@ -98,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Event Listeners
 function setupEventListeners() {
   loginBtn?.addEventListener('click', () => {
     loginModal.classList.add('active');
@@ -131,7 +123,6 @@ function setupEventListeners() {
     document.getElementById('editingCardId').value = '';
   });
 
-  // Only admin modal closes on outside click, login modal only closes via X button
   adminModal.addEventListener('click', (e) => {
     if (e.target === adminModal) {
       adminModal.classList.remove('active');
@@ -165,7 +156,6 @@ function setAuthMode(mode) {
   loginForm.reset();
 }
 
-// Authentication
 function checkAuthState() {
   auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -247,17 +237,8 @@ function updateUIForLoggedIn(user) {
   
   if (isAdmin) {
     adminControls.style.display = 'block';
-    const adminDebug = document.getElementById('adminDebug');
-    if (adminDebug) adminDebug.style.display = 'none';
-    console.log('✅ Admin mode enabled for:', user.email);
-    console.log('✅ Admin controls should be visible now');
   } else {
     adminControls.style.display = 'none';
-    const adminDebug = document.getElementById('adminDebug');
-    if (adminDebug) adminDebug.style.display = 'block';
-    console.log('❌ Regular user:', user.email);
-    console.log('❌ Admin emails list:', ADMIN_EMAILS);
-    console.log('❌ Is email in admin list?', ADMIN_EMAILS.includes(user.email));
   }
 }
 
@@ -285,16 +266,13 @@ async function loadCards() {
       const aId = a.cardId !== undefined && a.cardId !== null ? (typeof a.cardId === 'number' ? a.cardId : parseInt(a.cardId)) : 999999;
       const bId = b.cardId !== undefined && b.cardId !== null ? (typeof b.cardId === 'number' ? b.cardId : parseInt(b.cardId)) : 999999;
       
-      // If both have valid IDs, sort by ID
       if (!isNaN(aId) && !isNaN(bId)) {
         return aId - bId;
       }
       
-      // If only one has ID, put it first
       if (!isNaN(aId) && isNaN(bId)) return -1;
       if (isNaN(aId) && !isNaN(bId)) return 1;
       
-      // If neither has ID, sort by createdAt (newest first)
       const aTime = a.createdAt?.toMillis?.() || 0;
       const bTime = b.createdAt?.toMillis?.() || 0;
       return bTime - aTime;
@@ -493,21 +471,13 @@ async function getNextCardId() {
 async function handleAdminSubmit(e) {
   e.preventDefault();
   
-  // Double check admin status
   if (!currentUser) {
     alert('يجب تسجيل الدخول أولاً');
     return;
   }
   
-  // Re-check admin status with current user email
   const userEmail = currentUser.email;
   const isUserAdmin = ADMIN_EMAILS.includes(userEmail);
-  
-  console.log('=== Admin Check ===');
-  console.log('User email:', userEmail);
-  console.log('Admin emails list:', ADMIN_EMAILS);
-  console.log('Is admin?', isUserAdmin);
-  console.log('isAdmin variable:', isAdmin);
   
   if (!isUserAdmin) {
     alert(`ليس لديك صلاحيات المسؤول\nالبريد: ${userEmail}\n\nإذا كنت مسؤول، أضف بريدك إلى ADMIN_EMAILS في home.js`);
@@ -532,7 +502,6 @@ async function handleAdminSubmit(e) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  // Validate required fields
   if (!cardData.title || !cardData.description) {
     alert('الرجاء ملء جميع الحقول المطلوبة');
     return;
@@ -542,12 +511,10 @@ async function handleAdminSubmit(e) {
     let savedCardId = cardId;
     
     if (cardId) {
-      // Update existing card
       console.log('Updating card:', cardId, cardData);
       await db.collection('cards').doc(cardId).update(cardData);
       console.log('Card updated successfully');
     } else {
-      // Create new card
       cardData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       console.log('Creating new card:', cardData);
       const docRef = await db.collection('cards').add(cardData);
@@ -560,7 +527,6 @@ async function handleAdminSubmit(e) {
     document.getElementById('editingCardId').value = '';
     await loadCards();
     
-    // If we came from card page, redirect back
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('edit') && savedCardId) {
       window.location.href = `../guide/?id=${savedCardId}`;

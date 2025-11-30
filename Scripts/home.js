@@ -1,12 +1,34 @@
-// Firebase Configuration
-// TODO: Replace with your Firebase config
+// Obfuscation helper function
+function _d(s, k) {
+    try {
+        const b = atob(s);
+        let r = '';
+        for (let i = 0; i < b.length; i++) {
+            r += String.fromCharCode(b.charCodeAt(i) ^ k.charCodeAt(i % k.length));
+        }
+        return r;
+    } catch (e) {
+        return '';
+    }
+}
+
+// Obfuscated Firebase Configuration
+const _fc = {
+    a: _d('KngRUDhIL2lSUAVDHHsYBwdEKQkjQSdSWkAEZR1bPUtaaz0AKFgi', 'k1'),
+    b: _d('ClwERgNXGR8IQkZaDl4bVxkcDVsZVwlTGFcKQhscCF0G', 'k2'),
+    c: _d('Cl0ERwNWGR4IQ0ZbDl8bVhk=', 'k3'),
+    d: _d('CloEQANRGRkIREZcDlgbURkaDV0ZUQlVGFEYQARGClMOGgpEGw==', 'k4'),
+    e: _d('UgNZBF8NXwxTA10=', 'k5'),
+    f: _d('WgxSAFkHXw5fD1MAXQwcUwkMWQRdB1tVXgZdBA8AXw5ZAlhUXw8JBQ==', 'k6')
+};
+
 const firebaseConfig = {
-    apiKey: "AIzaSyDX9anrwJs6luB8HpLc1qoTvjVz1ZV1CiI",
-    authDomain: "another-cp-helper.firebaseapp.com",
-    projectId: "another-cp-helper",
-    storageBucket: "another-cp-helper.firebasestorage.app",
-    messagingSenderId: "96214849866",
-    appId: "1:96214849866:web:22610c5062d648243b49b3"
+    apiKey: _fc.a,
+    authDomain: _fc.b,
+    projectId: _fc.c,
+    storageBucket: _fc.d,
+    messagingSenderId: _fc.e,
+    appId: _fc.f
 };
 
 // Initialize Firebase
@@ -44,8 +66,12 @@ const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirmPassword');
 const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
 
-// Admin emails (you can move this to Firestore for better management)
-const ADMIN_EMAILS = ['amhemdeod@gmail.com', 'momen.atroush605@gmail.com']; // Replace with your admin email
+// Obfuscated Admin emails
+const _ae = [
+    _d('AAhZBAhVBApVIQJcAAxdTwZeDA==', 'ae1'),
+    _d('DApfBAscABFADhBBCVMCVCVVDARbDUtRDgg=', 'ae2')
+];
+const ADMIN_EMAILS = _ae; 
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,11 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAuthState();
   loadCompletedCards();
   
-  // Check if we need to open edit modal from URL parameter
   const urlParams = new URLSearchParams(window.location.search);
   const editCardId = urlParams.get('edit');
   if (editCardId) {
-    // Wait for auth and cards to load, then open edit modal
+  
     auth.onAuthStateChanged(async (user) => {
       if (user && ADMIN_EMAILS.includes(user.email)) {
         await loadCards();
@@ -65,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cardToEdit) {
           setTimeout(() => {
             openAdminModal(cardToEdit);
-            // Remove edit parameter from URL
             window.history.replaceState({}, document.title, window.location.pathname);
           }, 500);
         }
@@ -78,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
   loginBtn?.addEventListener('click', () => {
     loginModal.classList.add('active');
-    setAuthMode('login'); // Default to login when opening modal
+    setAuthMode('login');
   });
 
   logoutBtn?.addEventListener('click', handleLogout);
@@ -96,7 +120,7 @@ function setupEventListeners() {
       loginModal.classList.remove('active');
       adminModal.classList.remove('active');
       adminForm.reset();
-      loginForm.reset(); // Reset login form as well
+      loginForm.reset();
       document.getElementById('loginError').classList.remove('show');
     });
   });
@@ -107,21 +131,13 @@ function setupEventListeners() {
     document.getElementById('editingCardId').value = '';
   });
 
-  // Close modal on outside click
-  [loginModal, adminModal].forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-        if (modal === adminModal) {
-          adminForm.reset();
-          document.getElementById('editingCardId').value = '';
-        }
-        if (modal === loginModal) {
-          loginForm.reset();
-          document.getElementById('loginError').classList.remove('show');
-        }
-      }
-    });
+  // Only admin modal closes on outside click, login modal only closes via X button
+  adminModal.addEventListener('click', (e) => {
+    if (e.target === adminModal) {
+      adminModal.classList.remove('active');
+      adminForm.reset();
+      document.getElementById('editingCardId').value = '';
+    }
   });
 
   switchSignUp?.addEventListener('click', (e) => {
@@ -135,17 +151,16 @@ function setupEventListeners() {
   });
 }
 
-let authMode = 'login'; // 'login' or 'signup'
+let authMode = 'login';
 
 function setAuthMode(mode) {
   authMode = mode;
   const isLogin = mode === 'login';
   
   authSubmitBtn.textContent = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب';
-  document.querySelector('.switch-auth-mode:nth-of-type(1)').style.display = isLogin ? 'block' : 'none'; // 'ليس لديك حساب؟ إنشاء حساب'
-  document.querySelector('.switch-auth-mode:nth-of-type(2)').style.display = isLogin ? 'none' : 'block'; // 'لديك حساب بالفعل؟ تسجيل الدخول'
+  document.querySelector('.switch-auth-mode:nth-of-type(1)').style.display = isLogin ? 'block' : 'none'; 
+  document.querySelector('.switch-auth-mode:nth-of-type(2)').style.display = isLogin ? 'none' : 'block';
   
-  // Clear error message and form fields when switching modes
   document.getElementById('loginError').classList.remove('show');
   loginForm.reset();
 }
@@ -182,15 +197,13 @@ async function handleAuthSubmit(e) {
 
     if (authMode === 'login') {
       await auth.signInWithEmailAndPassword(email, password);
-    } else { // signup mode
+    } else { 
       await auth.createUserWithEmailAndPassword(email, password);
     }
     
     loginModal.classList.remove('active');
     loginForm.reset();
     
-    // Force reload cards after successful auth
-    // The auth state change should handle this, but we'll ensure it happens
     setTimeout(async () => {
       await loadCompletedCards();
       await loadCards();
@@ -229,7 +242,7 @@ function updateUIForLoggedIn(user) {
   welcomeText.textContent = `اهلاً يا ${displayName}!`;
   welcomeSection.querySelector('p').textContent = 'اختر بطاقة للبدء';
   
-  // Double check admin status
+
   isAdmin = ADMIN_EMAILS.includes(user.email);
   
   if (isAdmin) {
@@ -259,12 +272,10 @@ function updateUIForLoggedOut() {
 // Cards Management
 async function loadCards() {
   try {
-    // Try to load with orderBy first, but fallback to simple get if index doesn't exist
     let snapshot;
     try {
       snapshot = await db.collection('cards').orderBy('createdAt', 'desc').get();
     } catch (orderError) {
-      // If orderBy fails (likely missing index), just get all cards
       console.warn('OrderBy failed, loading without order:', orderError);
       snapshot = await db.collection('cards').get();
     }
@@ -273,8 +284,7 @@ async function loadCards() {
       id: doc.id,
       ...doc.data()
     }));
-    
-    // Sort manually if orderBy failed
+
     if (cards.length > 0 && cards[0].createdAt) {
       cards.sort((a, b) => {
         const aTime = a.createdAt?.toMillis?.() || 0;
@@ -286,7 +296,7 @@ async function loadCards() {
     renderCards();
   } catch (error) {
     console.error('Error loading cards:', error);
-    // Show user-friendly message
+
     if (error.code === 'permission-denied') {
       cardsContainer.innerHTML = '<p style="text-align: center; color: var(--danger); grid-column: 1/-1;">خطأ في الصلاحيات. يرجى التحقق من إعدادات Firestore.</p>';
     } else {
@@ -315,14 +325,12 @@ async function loadCompletedCards() {
 }
 
 function renderCards() {
-  // Check auth state directly if currentUser seems null
   const authUser = auth.currentUser;
   if (!currentUser && !authUser) {
     cardsContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">سجل الدخول لعرض البطاقات</p>';
     return;
   }
 
-  // Update currentUser if it's null but authUser exists
   if (!currentUser && authUser) {
     currentUser = authUser;
     isAdmin = ADMIN_EMAILS.includes(authUser.email);
@@ -339,14 +347,13 @@ function renderCards() {
 
   cardsContainer.innerHTML = cards.map(card => createCardHTML(card)).join('');
   
-  // Add event listeners to cards
   cards.forEach(card => {
     const cardElement = document.getElementById(`card-${card.id}`);
     if (cardElement) {
       // Card click - navigate to card page
       cardElement.addEventListener('click', (e) => {
         if (!e.target.closest('.card-actions')) {
-          window.location.href = `./guide/card.html?id=${card.id}`;
+          window.location.href = `../guide/?id=${card.id}`;
         }
       });
 
@@ -514,7 +521,7 @@ async function handleAdminSubmit(e) {
     // If we came from card page, redirect back
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('edit') && savedCardId) {
-      window.location.href = `./guide/card.html?id=${savedCardId}`;
+      window.location.href = `../guide/?id=${savedCardId}`;
     }
   } catch (error) {
     console.error('Error saving card:', error);

@@ -37,6 +37,9 @@ let currentUser = null;
 let isAdmin = false;
 let cards = [];
 let completedCards = [];
+let solvedProblemsCount = 0;
+let totalProblemsCount = 0;
+let solvingProblemsCount = 0;
 
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -71,6 +74,45 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   checkAuthState();
   loadCompletedCards();
+  
+  // Refresh solved problems count when page becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && currentUser) {
+      loadSolvedProblemsCount();
+    }
+  });
+  
+  // Also refresh when window gains focus (user comes back to tab)
+  window.addEventListener('focus', () => {
+    if (currentUser) {
+      loadSolvedProblemsCount();
+    }
+  });
+  
+  // Refresh when returning from guide page (check for storage event or use pageshow)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted || (currentUser && document.visibilityState === 'visible')) {
+      loadSolvedProblemsCount();
+    }
+  });
+  
+  // Listen for storage events (if guide page updates localStorage)
+  window.addEventListener('storage', () => {
+    if (currentUser) {
+      loadSolvedProblemsCount();
+    }
+  });
+  
+  // Check sessionStorage on page load to see if problem status was updated
+  if (sessionStorage.getItem('problemStatusUpdated')) {
+    sessionStorage.removeItem('problemStatusUpdated');
+    if (currentUser) {
+      // Small delay to ensure Firebase has updated
+      setTimeout(() => {
+        loadSolvedProblemsCount();
+      }, 500);
+    }
+  }
   
   const urlParams = new URLSearchParams(window.location.search);
   const editCardId = urlParams.get('edit');
@@ -164,6 +206,7 @@ function checkAuthState() {
       updateUIForLoggedIn(user);
       await loadCompletedCards();
       await loadCards();
+      await loadSolvedProblemsCount();
     } else {
       currentUser = null;
       isAdmin = false;
@@ -197,6 +240,7 @@ async function handleAuthSubmit(e) {
     setTimeout(async () => {
       await loadCompletedCards();
       await loadCards();
+      await loadSolvedProblemsCount();
     }, 100);
   } catch (error) {
     errorMsg.textContent = getErrorMessage(error.code);
@@ -232,6 +276,11 @@ function updateUIForLoggedIn(user) {
   welcomeText.textContent = `اهلاً يا ${displayName}!`;
   welcomeSection.querySelector('p').textContent = 'اختر بطاقة للبدء';
   
+  // Show stats section
+  const statsSection = document.getElementById('statsSection');
+  if (statsSection) {
+    statsSection.style.display = 'grid';
+  }
 
   isAdmin = ADMIN_EMAILS.includes(user.email);
   
@@ -240,6 +289,9 @@ function updateUIForLoggedIn(user) {
   } else {
     adminControls.style.display = 'none';
   }
+  
+  // Load solved problems count
+  loadSolvedProblemsCount();
 }
 
 function updateUIForLoggedOut() {
@@ -248,6 +300,16 @@ function updateUIForLoggedOut() {
   welcomeText.textContent = 'مرحباً بك!';
   welcomeSection.querySelector('p').textContent = 'سجل الدخول للبدء';
   adminControls.style.display = 'none';
+  
+  // Hide stats section
+  const statsSection = document.getElementById('statsSection');
+  if (statsSection) {
+    statsSection.style.display = 'none';
+  }
+  
+  // Reset counter
+  solvedProblemsCount = 0;
+  updateSolvedProblemsCounter();
 }
 
 // Cards Management
@@ -306,6 +368,99 @@ async function loadCompletedCards() {
   } catch (error) {
     console.error('Error loading completed cards:', error);
     completedCards = [];
+  }
+}
+
+async function loadSolvedProblemsCount() {
+  try {
+    if (!currentUser) {
+      solvedProblemsCount = 0;
+      totalProblemsCount = 0;
+      solvingProblemsCount = 0;
+      updateSolvedProblemsCounter();
+      return;
+    }
+
+    // Load all cards first
+    const cardsSnapshot = await db.collection('cards').get();
+    let totalSolved = 0;
+    let totalProblems = 0;
+    let totalSolving = 0;
+
+    // For each card, check user statuses and count problems
+    for (const cardDoc of cardsSnapshot.docs) {
+      try {
+        // Count total problems in this card
+        const problemsSnapshot = await db.collection('cards')
+          .doc(cardDoc.id)
+          .collection('problems')
+          .get();
+        totalProblems += problemsSnapshot.size;
+
+        // Get user statuses
+        const statusDoc = await db.collection('cards')
+          .doc(cardDoc.id)
+          .collection('userStatuses')
+          .doc(currentUser.uid)
+          .get();
+
+        if (statusDoc.exists) {
+          const statuses = statusDoc.data().statuses || {};
+          // Count problems with status 'done'
+          const solvedInCard = Object.values(statuses).filter(status => status === 'done').length;
+          totalSolved += solvedInCard;
+          
+          // Count problems with status 'solving'
+          const solvingInCard = Object.values(statuses).filter(status => status === 'solving').length;
+          totalSolving += solvingInCard;
+        }
+      } catch (error) {
+        // If permission denied or card has no problems, skip
+        console.warn(`Error loading statuses for card ${cardDoc.id}:`, error);
+        continue;
+      }
+    }
+
+    solvedProblemsCount = totalSolved;
+    totalProblemsCount = totalProblems;
+    solvingProblemsCount = totalSolving;
+    updateSolvedProblemsCounter();
+  } catch (error) {
+    console.error('Error loading solved problems count:', error);
+    solvedProblemsCount = 0;
+    totalProblemsCount = 0;
+    solvingProblemsCount = 0;
+    updateSolvedProblemsCounter();
+  }
+}
+
+function updateSolvedProblemsCounter() {
+  const counterElement = document.getElementById('solvedProblemsCount');
+  if (counterElement) {
+    const oldValue = parseInt(counterElement.textContent) || 0;
+    counterElement.textContent = solvedProblemsCount;
+    
+    // Add animation if value changed
+    if (oldValue !== solvedProblemsCount) {
+      counterElement.style.transform = 'scale(1.3)';
+      counterElement.style.color = 'var(--success)';
+      setTimeout(() => {
+        counterElement.style.transform = 'scale(1)';
+        counterElement.style.color = '';
+      }, 300);
+    }
+  }
+  
+  // Update total problems if element exists
+  const totalElement = document.getElementById('totalProblemsCount');
+  if (totalElement) {
+    totalElement.textContent = totalProblemsCount;
+  }
+  
+  // Update solving problems if element exists
+  const solvingElement = document.getElementById('solvingProblemsCount');
+  if (solvingElement) {
+    solvingElement.textContent = solvingProblemsCount;
   }
 }
 

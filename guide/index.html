@@ -131,6 +131,583 @@
       padding: 40px;
       color: var(--danger);
     }
+    
+    /* Problems Section */
+    .problems-section {
+      margin-top: 32px;
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      width: 100%;
+    }
+    
+    .problems-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    
+    .problems-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .problems-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-weight: normal;
+    }
+    
+    .add-problem-btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--text-white);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .add-problem-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .problems-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .problem-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      border: 2px solid var(--border-color);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    
+    .problem-item::before {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .problem-item:hover {
+      border-color: var(--primary-light);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    
+    .problem-item:hover::before {
+      opacity: 1;
+    }
+    
+    .problem-item.dragging {
+      opacity: 0.6;
+      transform: scale(0.98) rotate(1deg);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .problem-item.drag-over {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .problem-item.drag-over::before {
+      opacity: 1;
+    }
+    
+    /* Status indicator for active problems */
+    .problem-item[data-status="done"] {
+      border-left: 4px solid var(--success);
+    }
+    
+    .problem-item[data-status="solving"] {
+      border-left: 4px solid var(--accent);
+    }
+    
+    .problem-item[data-status="cant-solve"] {
+      border-left: 4px solid var(--danger);
+    }
+    
+    .problem-item[data-status="done"]::before,
+    .problem-item[data-status="solving"]::before,
+    .problem-item[data-status="cant-solve"]::before {
+      opacity: 1;
+    }
+    
+    .drag-handle {
+      width: 28px;
+      height: 28px;
+      cursor: grab;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      user-select: none;
+      flex-shrink: 0;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      background: rgba(99, 102, 241, 0.05);
+    }
+    
+    .drag-handle:active {
+      cursor: grabbing;
+      transform: scale(0.95);
+    }
+    
+    .drag-handle:hover {
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      transform: scale(1.1);
+    }
+    
+    .problem-status {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      background: rgba(99, 102, 241, 0.03);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    
+    .status-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 2px solid;
+      background: var(--bg-card);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .status-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .status-btn.done {
+      border-color: var(--success);
+      color: var(--success);
+    }
+    
+    .status-btn.done.active {
+      background: var(--success);
+      color: var(--text-white);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-btn.solving {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    
+    .status-btn.solving.active {
+      background: var(--accent);
+      color: var(--text-white);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5);
+      }
+    }
+    
+    .status-btn.cant-solve {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    
+    .status-btn.cant-solve.active {
+      background: var(--danger);
+      color: var(--text-white);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-btn:hover {
+      transform: scale(1.15) translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .status-btn:hover::before {
+      opacity: 0.1;
+    }
+    
+    .problem-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .problem-header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .problem-name {
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .problem-difficulty {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    
+    .problem-difficulty.easy {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .problem-difficulty.medium {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .problem-difficulty.hard {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .problem-link-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .problem-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+      word-break: break-all;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      max-width: 100%;
+    }
+    
+    .problem-link::before {
+      content: '🔗';
+      font-size: 12px;
+      opacity: 0.7;
+      transition: all 0.2s ease;
+    }
+    
+    .problem-link:hover {
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateX(-2px);
+    }
+    
+    .problem-link:hover::before {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    
+    .problem-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    
+    .problem-edit-btn,
+    .problem-delete-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .problem-edit-btn {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .problem-edit-btn:hover {
+      background: var(--primary);
+      color: var(--text-white);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    
+    .problem-delete-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .problem-delete-btn:hover {
+      background: var(--danger);
+      color: var(--text-white);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .no-problems {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+    
+    /* Responsive Design for Problem Cards */
+    @media (max-width: 768px) {
+      .problem-item {
+        padding: 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      
+      .problem-status {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+      }
+      
+      .problem-info {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+      
+      .problem-actions {
+        order: 2;
+      }
+      
+      .drag-handle {
+        order: 1;
+      }
+      
+      .problem-name {
+        font-size: 16px;
+      }
+      
+      .problem-link {
+        font-size: 13px;
+      }
+      
+      .problem-difficulty {
+        font-size: 10px;
+        padding: 3px 8px;
+      }
+      
+      .problem-header-info {
+        gap: 8px;
+      }
+      
+      .status-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+    }
+    
+    /* Animation for problem items when loaded */
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .problem-item {
+      animation: slideInUp 0.4s ease-out backwards;
+    }
+    
+    .problem-item:nth-child(1) { animation-delay: 0.05s; }
+    .problem-item:nth-child(2) { animation-delay: 0.1s; }
+    .problem-item:nth-child(3) { animation-delay: 0.15s; }
+    .problem-item:nth-child(4) { animation-delay: 0.2s; }
+    .problem-item:nth-child(5) { animation-delay: 0.25s; }
+    .problem-item:nth-child(n+6) { animation-delay: 0.3s; }
+    
+    /* Problem Modal */
+    .problem-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+    
+    .problem-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .problem-modal-content {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--shadow-xl);
+      position: relative;
+    }
+    
+    .problem-modal-content h3 {
+      margin: 0 0 24px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .problem-form-group {
+      margin-bottom: 20px;
+    }
+    
+    .problem-form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    
+    .problem-form-group input,
+    .problem-form-group select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .problem-form-group input:focus,
+    .problem-form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .problem-modal-content form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .submit-btn,
+    .cancel-btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-family: inherit;
+    }
+    
+    .submit-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--text-white);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+    
+    .cancel-btn {
+      background: var(--bg-main);
+      color: var(--text-secondary);
+      border: 2px solid var(--border-color);
+    }
+    
+    .cancel-btn:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+      border-color: var(--text-secondary);
+    }
   </style>
 </head>
 
@@ -154,6 +731,35 @@
 
   <!-- Edit Button (Admin Only) -->
   <button id="editContentBtn" class="edit-content-btn" style="display: none;">✎ تعديل المحتوى</button>
+
+  <!-- Problem Modal -->
+  <div id="problemModal" class="problem-modal">
+    <div class="problem-modal-content">
+      <span class="close-modal" onclick="closeProblemModal()" style="position: absolute; left: 20px; top: 20px; font-size: 28px; cursor: pointer; color: var(--text-secondary);">&times;</span>
+      <h3 id="problemModalTitle">إضافة مشكلة جديدة</h3>
+      <form id="problemForm" onsubmit="handleProblemSubmit(event)">
+        <div class="problem-form-group">
+          <label for="problemName">اسم المشكلة:</label>
+          <input type="text" id="problemName" required placeholder="مثال: Two Sum">
+        </div>
+        <div class="problem-form-group">
+          <label for="problemLink">رابط المشكلة:</label>
+          <input type="url" id="problemLink" required placeholder="https://leetcode.com/problems/two-sum/">
+        </div>
+        <div class="problem-form-group">
+          <label for="problemDifficulty">الصعوبة:</label>
+          <select id="problemDifficulty">
+            <option value="سهل">سهل</option>
+            <option value="متوسط">متوسط</option>
+            <option value="صعب">صعب</option>
+          </select>
+        </div>
+        <input type="hidden" id="editingProblemId">
+        <button type="submit" class="submit-btn">حفظ</button>
+        <button type="button" class="cancel-btn" onclick="closeProblemModal()">إلغاء</button>
+      </form>
+    </div>
+  </div>
 
   <script>
     // Firebase Configuration (same as home.js)
@@ -188,6 +794,16 @@
         isAdmin = ADMIN_EMAILS.includes(user.email);
         if (isAdmin) {
           document.getElementById('editContentBtn').style.display = 'block';
+        }
+      } else {
+        // User not logged in - show message
+        const problemsList = document.getElementById('problemsList');
+        if (problemsList) {
+          problemsList.innerHTML = `
+            <div class="no-problems">
+              <p style="color: var(--text-secondary);">يجب تسجيل الدخول لعرض الأسئلة</p>
+            </div>
+          `;
         }
       }
       if (cardId) {
@@ -251,7 +867,22 @@
         <div class="card-page-content">
           ${cardContent}
         </div>
+        <div class="problems-section">
+          <div class="problems-header">
+            <div>
+              <h2 class="problems-title">الأسئلة</h2>
+              ${isAdmin ? '<p class="problems-subtitle">اسحب الأسئلة لإعادة ترتيبها</p>' : ''}
+            </div>
+            ${isAdmin ? '<button class="add-problem-btn" onclick="openProblemModal()">+ إضافة مشكلة</button>' : ''}
+          </div>
+          <div id="problemsList" class="problems-list">
+            <div class="loading">جاري تحميل الأسئلة...</div>
+          </div>
+        </div>
       `;
+      
+      // Load problems after displaying card
+      loadProblems(card.id);
     }
 
     // Edit button click
@@ -271,6 +902,398 @@
         </div>
       `;
     }
+
+    // Problems Management
+    let problems = [];
+    let problemStatuses = {};
+
+    // Make functions globally accessible for onclick handlers
+    window.openProblemModal = function(problemId = null) {
+      const modal = document.getElementById('problemModal');
+      const form = document.getElementById('problemForm');
+      const title = document.getElementById('problemModalTitle');
+      
+      if (problemId) {
+        const problem = problems.find(p => p.id === problemId);
+        if (problem) {
+          document.getElementById('problemName').value = problem.name || '';
+          document.getElementById('problemLink').value = problem.link || '';
+          document.getElementById('problemDifficulty').value = problem.difficulty || 'متوسط';
+          document.getElementById('editingProblemId').value = problem.id;
+          title.textContent = 'تعديل المشكلة';
+        }
+      } else {
+        form.reset();
+        document.getElementById('problemDifficulty').value = 'متوسط';
+        document.getElementById('editingProblemId').value = '';
+        title.textContent = 'إضافة مشكلة جديدة';
+      }
+      
+      modal.classList.add('active');
+    };
+
+    window.closeProblemModal = function() {
+      const modal = document.getElementById('problemModal');
+      modal.classList.remove('active');
+      document.getElementById('problemForm').reset();
+      document.getElementById('editingProblemId').value = '';
+    };
+
+    window.handleProblemSubmit = async function(e) {
+      e.preventDefault();
+      if (!isAdmin) return;
+
+      const problemId = document.getElementById('editingProblemId').value;
+      const problemData = {
+        name: document.getElementById('problemName').value.trim(),
+        link: document.getElementById('problemLink').value.trim(),
+        difficulty: document.getElementById('problemDifficulty').value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        if (problemId) {
+          await db.collection('cards').doc(cardId).collection('problems').doc(problemId).update(problemData);
+        } else {
+          // Get next order for new problem
+          const maxOrder = problems.length > 0 
+            ? Math.max(...problems.map(p => p.order || 0)) 
+            : -1;
+          problemData.order = maxOrder + 1;
+          problemData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection('cards').doc(cardId).collection('problems').add(problemData);
+        }
+
+        closeProblemModal();
+        await loadProblems(cardId);
+      } catch (error) {
+        console.error('Error saving problem:', error);
+        if (error.code === 'permission-denied') {
+          alert('خطأ في الصلاحيات!\n\nيرجى تحديث قواعد Firestore لتشمل الأسئلة.\nراجع ملف FIRESTORE_RULES.md');
+        } else {
+          alert('حدث خطأ أثناء حفظ المشكلة');
+        }
+      }
+    };
+
+    window.updateProblemStatus = async function(problemId, newStatus) {
+      if (!currentUser) {
+        alert('يجب تسجيل الدخول أولاً');
+        return;
+      }
+
+      try {
+        const statusRef = db.collection('cards').doc(cardId).collection('userStatuses').doc(currentUser.uid);
+        
+        // Toggle if clicking same status
+        if (problemStatuses[problemId] === newStatus) {
+          delete problemStatuses[problemId];
+        } else {
+          problemStatuses[problemId] = newStatus;
+        }
+
+        await statusRef.set({
+          statuses: problemStatuses
+        }, { merge: true });
+
+        await loadProblemStatuses(cardId);
+        renderProblems();
+        
+        // Notify home page to refresh counter (using sessionStorage)
+        sessionStorage.setItem('problemStatusUpdated', Date.now().toString());
+      } catch (error) {
+        console.error('Error updating problem status:', error);
+        alert('حدث خطأ أثناء تحديث حالة المشكلة');
+      }
+    };
+
+    window.editProblem = function(problemId) {
+      openProblemModal(problemId);
+    };
+
+    window.deleteProblem = async function(problemId) {
+      if (!isAdmin) return;
+      if (!confirm('هل أنت متأكد من حذف هذه المشكلة؟')) return;
+
+      try {
+        await db.collection('cards').doc(cardId).collection('problems').doc(problemId).delete();
+        await loadProblems(cardId);
+      } catch (error) {
+        console.error('Error deleting problem:', error);
+        alert('حدث خطأ أثناء حذف المشكلة');
+      }
+    };
+
+    async function loadProblems(cardId) {
+      const problemsList = document.getElementById('problemsList');
+      if (!problemsList) return;
+
+      // Check if user is logged in
+      if (!currentUser) {
+        problemsList.innerHTML = `
+          <div class="no-problems">
+              <p style="color: var(--text-secondary);">يجب تسجيل الدخول لعرض الأسئلة</p>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        // Try with orderBy first, but fallback if index doesn't exist
+        let snapshot;
+        try {
+          snapshot = await db.collection('cards').doc(cardId).collection('problems').orderBy('createdAt', 'desc').get();
+        } catch (orderError) {
+          // If orderBy fails due to permission, re-throw it
+          if (orderError.code === 'permission-denied') {
+            throw orderError;
+          }
+          // If orderBy fails (likely missing index), just get all problems
+          console.warn('OrderBy failed, loading without order:', orderError);
+          snapshot = await db.collection('cards').doc(cardId).collection('problems').get();
+        }
+        
+        problems = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        // Sort manually if orderBy failed
+        if (problems.length > 0 && problems[0].createdAt) {
+          problems.sort((a, b) => {
+            const aTime = a.createdAt?.toMillis?.() || 0;
+            const bTime = b.createdAt?.toMillis?.() || 0;
+            return bTime - aTime;
+          });
+        }
+
+        // Load user problem statuses
+        await loadProblemStatuses(cardId);
+
+        renderProblems();
+      } catch (error) {
+        console.error('Error loading problems:', error);
+        console.error('Error code:', error.code);
+        console.error('Current user:', currentUser?.email);
+        
+        if (error.code === 'permission-denied') {
+          problemsList.innerHTML = `
+            <div class="no-problems">
+              <p style="color: var(--danger); margin-bottom: 12px; font-weight: 600;">خطأ في الصلاحيات</p>
+              <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">
+                تأكد من:
+              </p>
+              <ul style="text-align: right; font-size: 14px; color: var(--text-secondary); padding-right: 20px; margin-bottom: 12px;">
+                <li>تطبيق قواعد Firestore المحدثة من ملف FIRESTORE_RULES.md</li>
+                <li>أنك سجلت الدخول (البريد: ${currentUser?.email || 'غير مسجل'})</li>
+                <li>أن القواعد تم نشرها (Publish) في Firebase Console</li>
+                <li>انتظار بضع ثوانٍ بعد النشر</li>
+              </ul>
+              <p style="font-size: 12px; color: var(--text-secondary);">
+                الخطأ: ${error.message}
+              </p>
+            </div>
+          `;
+        } else {
+          problemsList.innerHTML = `<div class="no-problems">حدث خطأ أثناء تحميل الأسئلة: ${error.message}</div>`;
+        }
+      }
+    }
+
+    async function loadProblemStatuses(cardId) {
+      try {
+        const statusDoc = await db.collection('cards').doc(cardId).collection('userStatuses').doc(currentUser.uid).get();
+        if (statusDoc.exists) {
+          problemStatuses = statusDoc.data().statuses || {};
+        } else {
+          problemStatuses = {};
+        }
+      } catch (error) {
+        console.error('Error loading problem statuses:', error);
+        problemStatuses = {};
+      }
+    }
+
+    function renderProblems() {
+      const problemsList = document.getElementById('problemsList');
+      if (!problemsList) return;
+
+      if (problems.length === 0) {
+        problemsList.innerHTML = '<div class="no-problems">لا توجد أسئلة متاحة بعد</div>';
+        return;
+      }
+      
+      // Sort by order if exists, otherwise by createdAt
+      problems.sort((a, b) => {
+        const aOrder = a.order !== undefined ? a.order : 999999;
+        const bOrder = b.order !== undefined ? b.order : 999999;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        
+        // If same order, sort by createdAt
+        const aTime = a.createdAt?.toMillis?.() || 0;
+        const bTime = b.createdAt?.toMillis?.() || 0;
+        return bTime - aTime;
+      });
+
+      problemsList.innerHTML = problems.map((problem, index) => {
+        const status = problemStatuses[problem.id] || 'none';
+        const difficulty = problem.difficulty || 'متوسط';
+        const difficultyClass = difficulty === 'سهل' ? 'easy' : 
+                              difficulty === 'متوسط' ? 'medium' : 'hard';
+        return `
+          <div class="problem-item" 
+               draggable="${isAdmin ? 'true' : 'false'}" 
+               data-problem-id="${problem.id}"
+               data-problem-index="${index}"
+               data-status="${status}">
+            ${isAdmin ? '<div class="drag-handle" title="اسحب لإعادة الترتيب">☰</div>' : ''}
+            <div class="problem-status">
+              <button class="status-btn done ${status === 'done' ? 'active' : ''}" 
+                      onclick="updateProblemStatus('${problem.id}', 'done')" 
+                      title="تم الحل">✓</button>
+              <button class="status-btn solving ${status === 'solving' ? 'active' : ''}" 
+                      onclick="updateProblemStatus('${problem.id}', 'solving')" 
+                      title="قيد الحل">⟳</button>
+              <button class="status-btn cant-solve ${status === 'cant-solve' ? 'active' : ''}" 
+                      onclick="updateProblemStatus('${problem.id}', 'cant-solve')" 
+                      title="لا أستطيع الحل">✗</button>
+            </div>
+            <div class="problem-info">
+              <div class="problem-header-info">
+                <div class="problem-name">${problem.name || 'بدون اسم'}</div>
+                <span class="problem-difficulty ${difficultyClass}">${difficulty}</span>
+              </div>
+              <div class="problem-link-container">
+                <a href="${problem.link}" target="_blank" class="problem-link" rel="noopener noreferrer">${problem.link}</a>
+              </div>
+            </div>
+            ${isAdmin ? `
+              <div class="problem-actions">
+                <button class="problem-edit-btn" onclick="editProblem('${problem.id}')" title="تعديل">✎</button>
+                <button class="problem-delete-btn" onclick="deleteProblem('${problem.id}')" title="حذف">×</button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      // Setup drag and drop after rendering
+      if (isAdmin) {
+        setTimeout(setupDragAndDrop, 100);
+      }
+    }
+
+    // Drag and Drop functionality
+    let draggedElement = null;
+    let draggedIndex = null;
+
+    function setupDragAndDrop() {
+      if (!isAdmin) return;
+
+      const problemsList = document.getElementById('problemsList');
+      if (!problemsList) return;
+
+      const problemItems = problemsList.querySelectorAll('.problem-item[draggable="true"]');
+      
+      problemItems.forEach((item) => {
+        // Remove existing listeners by cloning
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+
+        newItem.addEventListener('dragstart', handleDragStart);
+        newItem.addEventListener('dragend', handleDragEnd);
+        newItem.addEventListener('dragover', handleDragOver);
+        newItem.addEventListener('drop', handleDrop);
+        newItem.addEventListener('dragenter', handleDragEnter);
+        newItem.addEventListener('dragleave', handleDragLeave);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      draggedIndex = parseInt(this.dataset.problemIndex);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      const allItems = document.querySelectorAll('.problem-item');
+      allItems.forEach(item => item.classList.remove('drag-over'));
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDragEnter(e) {
+      if (this !== draggedElement) {
+        this.classList.add('drag-over');
+      }
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    async function handleDrop(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+
+      if (draggedElement !== this) {
+        const dropIndex = parseInt(this.dataset.problemIndex);
+        const draggedProblemId = draggedElement.dataset.problemId;
+        const dropProblemId = this.dataset.problemId;
+
+        // Reorder all problems
+        const sortedProblems = [...problems].sort((a, b) => {
+          const aOrder = a.order !== undefined ? a.order : 999999;
+          const bOrder = b.order !== undefined ? b.order : 999999;
+          return aOrder - bOrder;
+        });
+
+        // Remove dragged item
+        const draggedItem = sortedProblems.find(p => p.id === draggedProblemId);
+        sortedProblems.splice(draggedIndex, 1);
+        
+        // Insert at new position
+        sortedProblems.splice(dropIndex, 0, draggedItem);
+        
+        // Update all orders
+        const batch = db.batch();
+        sortedProblems.forEach((problem, index) => {
+          const problemRef = db.collection('cards').doc(cardId).collection('problems').doc(problem.id);
+          batch.update(problemRef, { order: index });
+        });
+
+        try {
+          await batch.commit();
+          // Re-render to show new order
+          await loadProblems(cardId);
+        } catch (error) {
+          console.error('Error updating problem order:', error);
+          alert('حدث خطأ أثناء حفظ الترتيب');
+          // Reload to restore original order
+          await loadProblems(cardId);
+        }
+      }
+
+      this.classList.remove('drag-over');
+      return false;
+    }
+
+    // Close modal on outside click
+    document.getElementById('problemModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'problemModal') {
+        closeProblemModal();
+      }
+    });
   </script>
 
 </body>
